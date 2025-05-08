@@ -61,6 +61,18 @@ export default function CouponModal({ isOpen, onClose, coupon, codeAlreadyReveal
       return;
     }
 
+    // Dispara evento para o GTM
+    if (typeof window !== 'undefined' && window.dataLayer) {
+      window.dataLayer.push({
+        event: 'coupon_click',
+        coupon_code: coupon.code,
+        coupon_title: coupon.title,
+        store_name: coupon.store.name,
+        discount_type: coupon.type,
+        button_type: 'go_to_store'
+      });
+    }
+
     // Abre o link em uma nova aba
     window.open(validUrl, '_blank', 'noopener,noreferrer');
   };

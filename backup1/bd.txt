@@ -1,4 +1,0 @@
-OSeIKvD1wsLgoIlp
-
-
-mongodb+srv://johnpatrocinio1:<OSeIKvD1wsLgoIlp>@cluster0.rpdoy65.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
