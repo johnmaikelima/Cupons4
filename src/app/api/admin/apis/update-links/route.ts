@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { Store } from '@/models/Store';
 import { Coupon } from '@/models/Coupon';
 import connectDB from '@/lib/mongodb';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
 
 const SOURCE_ID = '38359488';
 
@@ -21,6 +23,15 @@ function updateSourceId(url: string): string {
 
 export async function GET() {
   try {
+    // Verifica autenticação
+    const session = await getServerSession(authOptions);
+    if (!session?.user) {
+      return NextResponse.json(
+        { error: 'Não autorizado' },
+        { status: 401 }
+      );
+    }
+
     await connectDB();
     
     // Atualiza links das lojas
