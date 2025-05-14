@@ -41,7 +41,7 @@ export default async function Home() {
     <main className="min-h-screen">
       <HeroBanner />
       <WhyUseCoupons />
-      
+
       {/* Seção de Cupons e Sidebar */}
       <section className="w-full py-16 md:py-24">
         <div className="container mx-auto px-4">

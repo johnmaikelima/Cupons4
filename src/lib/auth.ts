@@ -17,6 +17,8 @@ import mongoose from 'mongoose';
 import connectDB from '@/lib/mongodb';
 
 export const authOptions: NextAuthOptions = {
+  secret: process.env.NEXTAUTH_SECRET || 'your-secret-key-here',
+  debug: process.env.NODE_ENV === 'development',
   providers: [
     CredentialsProvider({
       name: 'Credentials',
@@ -75,6 +77,10 @@ export const authOptions: NextAuthOptions = {
     })
   ],
   callbacks: {
+    async redirect({ url, baseUrl }) {
+      if (url.startsWith(baseUrl)) return url;
+      return baseUrl + url;
+    },
     async jwt({ token, user }) {
       if (user) {
         token.isAdmin = user.isAdmin;

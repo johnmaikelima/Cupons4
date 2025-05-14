@@ -52,7 +52,7 @@ export async function POST(
       sourceId: api.sourceId
     });
 
-    const lomadee = new LomadeeService(api.appToken!, api.sourceId!);
+    const lomadee = new LomadeeService(api.appToken, api.sourceId);
 
     // Primeiro, buscar e salvar todas as lojas
     console.log('Buscando lojas da API...');

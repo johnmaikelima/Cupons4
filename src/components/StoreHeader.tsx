@@ -85,8 +85,8 @@ export default function StoreHeader({
 
           {/* Stats e Botão */}
           <div className="flex flex-col-reverse md:flex-row md:items-center md:justify-between gap-4">
-            {/* Stats */}
-            <div className="flex flex-col md:flex-row md:items-center gap-4">
+            {/* Stats - Visível apenas em desktop */}
+            <div className="hidden md:flex md:flex-row md:items-center gap-4">
               <StatCard
                 icon={<FiPercent className="w-5 h-5" />}
                 label="Desconto Máximo"

@@ -40,10 +40,10 @@ interface LomadeeCouponResponse {
 }
 
 export class LomadeeService {
-  private appToken: string;
-  private sourceId: string;
+  private appToken = '17457627443735fab3c6f';
+  private sourceId = '38359488';
 
-  constructor(appToken: string, sourceId: string) {
+  constructor(appToken: string = '17457627443735fab3c6f', sourceId: string = '38359488') {
     this.appToken = appToken;
     this.sourceId = sourceId;
 
@@ -122,7 +122,30 @@ export class LomadeeService {
 
   async getStores(): Promise<LomadeeStore[]> {
     console.log('Buscando lojas...');
-    return this.fetchStores();
+    const stores = await this.fetchStores();
+    return stores.map(store => ({
+      ...store,
+      link: this.generateAffiliateLink(store.link)
+    }));
+  }
+
+  // Função para gerar link de afiliado com o sourceId correto
+  private generateAffiliateLink(originalLink: string): string {
+    try {
+      const url = new URL(originalLink);
+      
+      // Se o link já é de validação, atualiza o sourceId
+      if (url.hostname === 'developer.lomadee.com' && url.pathname === '/redir/validation/') {
+        url.searchParams.set('sourceId', this.sourceId);
+        return url.toString();
+      }
+      
+      // Se não é um link de validação, retorna o link original
+      return originalLink;
+    } catch (error) {
+      console.error('Erro ao gerar link de afiliado:', error);
+      return originalLink;
+    }
   }
 
   async getCoupons(): Promise<LomadeeCoupon[]> {
@@ -136,7 +159,7 @@ export class LomadeeService {
         name: coupon.store.name,
         image: coupon.store.image,
       },
-      link: coupon.link,
+      link: this.generateAffiliateLink(coupon.link),
       vigency: coupon.vigency,
       discount: coupon.discount,
       status: coupon.status

@@ -11,10 +11,10 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (session?.user) {
-      router.push('/admin');
+    if (status === 'authenticated' && session?.user?.isAdmin) {
+      router.replace('/admin');
     }
-  }, [session, router]);
+  }, [status, session, router]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -29,13 +29,14 @@ export default function LoginPage() {
       const result = await signIn('credentials', {
         email,
         password,
-        redirect: false,
+        redirect: true,
+        callbackUrl: '/admin'
       });
 
       if (result?.error) {
         setError('Credenciais inválidas');
-      } else {
-        router.push('/admin');
+      } else if (result?.ok) {
+        router.replace('/admin');
       }
     } catch (error) {
       setError('Erro ao fazer login');

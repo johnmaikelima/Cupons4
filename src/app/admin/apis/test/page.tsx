@@ -44,7 +44,7 @@ export default function TestPage() {
         <ul className="list-disc list-inside">
           <li>URL Base: <code className="bg-blue-100 px-1 rounded">https://api.lomadee.com/v2</code></li>
           <li>App Token: <code className="bg-blue-100 px-1 rounded">17457627443735fab3c6f</code></li>
-          <li>Source ID: <code className="bg-blue-100 px-1 rounded">38041897</code></li>
+          <li>Source ID: <code className="bg-blue-100 px-1 rounded">38359488</code></li>
         </ul>
         <p className="mt-2">Ao clicar em "Importar", os dados serão salvos no banco.</p>
       </div>

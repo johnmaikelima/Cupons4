@@ -53,12 +53,12 @@ export async function PUT(
         description: data.description,
         store: data.store,
         type: data.type,
-        expiresAt: data.expiryDate,
+        expiresAt: data.expiryDate, // Corrigido para expiresAt
         image: data.image,
-        code: data.code,
-        url: data.url,
-        affiliateLink: data.url, // Mantemos em ambos os campos por compatibilidade
-        active: true
+        code: data.code, // Adicionado campo code
+        url: data.affiliateLink, // URL é o link de afiliado
+        affiliateLink: data.affiliateLink, // Mantemos em ambos os campos por compatibilidade
+        active: data.active
       },
       { new: true }
     ).populate('store');

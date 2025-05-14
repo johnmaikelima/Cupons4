@@ -1,0 +1,40 @@
+.mobile-filters-toggle {
+  display: none;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background-color: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 0.375rem;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  transition: background-color 0.2s;
+}
+
+.mobile-filters-toggle:hover {
+  background-color: #1d4ed8;
+}
+
+.toggle-icon {
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+@media (max-width: 768px) {
+  .mobile-filters-toggle {
+    display: flex;
+  }
+
+  .filters-sidebar {
+    display: none;
+  }
+
+  .filters-sidebar.show-mobile {
+    display: block;
+  }
+}

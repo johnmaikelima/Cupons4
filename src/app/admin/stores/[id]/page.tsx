@@ -17,22 +17,10 @@ export default async function EditStorePage({ params }: Props) {
     notFound();
   }
 
-  // Serializa apenas os campos necessários
-  const serializedStore = {
-    id: store._id.toString(),
-    name: store.name,
-    slug: store.slug,
-    logo: store.logo,
-    url: store.url,
-    description: store.description,
-    featured: store.featured,
-    active: store.active
-  };
-
   return (
     <div>
       <h1 className="text-3xl font-bold text-gray-900 mb-8">Editar Loja</h1>
-      <StoreForm initialData={serializedStore} />
+      <StoreForm initialData={JSON.parse(JSON.stringify(store))} />
     </div>
   );
 }

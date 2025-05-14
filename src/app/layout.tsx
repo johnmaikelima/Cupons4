@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
-// Removido import não utilizado do next-cloudinary
+import { CldUploadWidgetInfo } from 'next-cloudinary';
 import './globals.css';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
@@ -22,6 +22,9 @@ export default function RootLayout({
   return (
     <html lang="pt-BR">
       <head>
+        {/* Lomadee Verification */}
+        <meta name="lomadee-verification" content="22720784" />
+
         <script
           src={`https://widget.cloudinary.com/v2.0/global/all.js`}
           async

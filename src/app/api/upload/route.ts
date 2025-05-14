@@ -1,4 +1,11 @@
 import { NextResponse } from 'next/server';
+import { v2 as cloudinary } from 'cloudinary';
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+});
 
 export async function POST(request: Request) {
   try {
@@ -17,28 +24,16 @@ export async function POST(request: Request) {
     const buffer = Buffer.from(bytes);
     const base64File = `data:${file.type};base64,${buffer.toString('base64')}`;
 
-    // Faz upload para o Cloudinary usando fetch
-    const formDataCloudinary = new FormData();
-    formDataCloudinary.append('file', base64File);
-    formDataCloudinary.append('upload_preset', 'cupons_logos');
-
-    const response = await fetch(
-      `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
-      {
-        method: 'POST',
-        body: formDataCloudinary,
-      }
-    );
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.error?.message || 'Erro ao fazer upload');
-    }
+    // Faz upload para o Cloudinary
+    const result = await cloudinary.uploader.upload(base64File, {
+      folder: 'cupons/logos',
+      public_id: `logo-${Date.now()}`,
+      resource_type: 'auto'
+    });
 
     // Retorna a URL segura da imagem
     return NextResponse.json({ 
-      url: data.secure_url
+      url: result.secure_url
     });
   } catch (error) {
     console.error('Erro ao fazer upload:', error);

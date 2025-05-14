@@ -50,14 +50,16 @@ export default function CouponCard({ coupon }: CouponCardProps) {
     }
 
     // Dispara evento para o GTM
-    window.dataLayer?.push({
-      event: 'coupon_click',
-      coupon_code: coupon.code,
-      coupon_title: coupon.title,
-      store_name: coupon.store.name,
-      discount_type: coupon.type,
-      button_type: 'activate'
-    });
+    if (typeof window !== 'undefined' && window.dataLayer) {
+      window.dataLayer.push({
+        event: 'coupon_click',
+        coupon_code: coupon.code,
+        coupon_title: coupon.title,
+        store_name: coupon.store.name,
+        discount_type: coupon.type,
+        button_type: 'activate'
+      });
+    }
 
     window.open(validUrl, '_blank', 'noopener,noreferrer');
     setModalOpen(true);

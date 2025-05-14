@@ -6,8 +6,7 @@ import StoreSidebar from '@/components/StoreSidebar';
 import RelatedStores from '@/components/RelatedStores';
 import { Store } from '@/models/Store';
 import { Coupon } from '@/models/Coupon';
-import connectDB from '@/lib/mongodb';
-import mongoose from 'mongoose';
+import { connectDB } from '@/lib/mongoose';
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
@@ -60,24 +59,8 @@ const formatExpiryDate = (date: string) => {
 // Função para gerar os metadados da página
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   await connectDB();
-
-  const StoreModel = mongoose.models.Store || mongoose.model('Store', new mongoose.Schema({
-    name: { type: String, required: true },
-    slug: { type: String, required: true, unique: true },
-    logo: { type: String },
-    url: { type: String },
-    description: { type: String },
-    featured: { type: Boolean, default: false },
-    active: { type: Boolean, default: true },
-    provider: { type: String, required: true },
-    hasOffers: { type: Boolean, default: false },
-    externalId: { type: String },
-    affiliateLink: { type: String },
-    createdAt: { type: Date, default: Date.now },
-    updatedAt: { type: Date, default: Date.now }
-  }));
   
-  const store = await StoreModel.findOne({ slug: params.slug });
+  const store = await Store.findOne({ slug: params.slug });
   if (!store) {
     return {
       title: 'Loja não encontrada'
@@ -112,25 +95,9 @@ export default async function StorePage({ params }: Props) {
   }
 
   await connectDB();
-
-  const StoreModel = mongoose.models.Store || mongoose.model('Store', new mongoose.Schema({
-    name: { type: String, required: true },
-    slug: { type: String, required: true, unique: true },
-    logo: { type: String },
-    url: { type: String },
-    description: { type: String },
-    featured: { type: Boolean, default: false },
-    active: { type: Boolean, default: true },
-    provider: { type: String, required: true },
-    hasOffers: { type: Boolean, default: false },
-    externalId: { type: String },
-    affiliateLink: { type: String },
-    createdAt: { type: Date, default: Date.now },
-    updatedAt: { type: Date, default: Date.now }
-  }));
   
   // Busca os dados da loja atual
-  const store = await StoreModel.findOne({ slug: params.slug });
+  const store = await Store.findOne({ slug: params.slug });
   if (!store) {
     return notFound();
   }

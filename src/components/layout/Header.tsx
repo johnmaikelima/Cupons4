@@ -14,7 +14,7 @@ interface SiteConfig {
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [config, setConfig] = useState<SiteConfig>({ logo: '/logo.png', name: 'LinkCompra' });
+  const [config, setConfig] = useState<SiteConfig>({ logo: '', name: 'LinkCompra' });
 
   useEffect(() => {
     // Carregar configurações do site
@@ -45,15 +45,19 @@ export default function Header() {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center">
-            <div className="relative h-8 w-32">
-              <Image
-                src={config.logo}
-                alt={config.name}
-                fill
-                className="object-contain"
-                priority
-              />
-            </div>
+            {config.logo ? (
+              <div className="relative h-8 w-32">
+                <Image
+                  src={config.logo}
+                  alt={config.name}
+                  fill
+                  className="object-contain"
+                  priority
+                />
+              </div>
+            ) : (
+              <span className="text-xl font-semibold">{config.name}</span>
+            )}
           </Link>
 
           {/* Busca */}
