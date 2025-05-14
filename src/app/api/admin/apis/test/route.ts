@@ -64,13 +64,14 @@ export async function GET() {
         // Primeiro, verifica se a loja já existe
         let existingStore = await Store.findOne({ externalId, provider: 'lomadee' });
         
-        // Prepara os dados para atualização
+        // Prepara os dados para atualização - sempre atualiza o link de afiliado
         const updateData = {
           name: storeData.name,
           active: true,
           provider: 'lomadee',
           externalId: externalId,
-          affiliateLink: storeData.affiliateLink,
+          affiliateLink: storeData.affiliateLink, // Sempre atualiza o link
+          url: storeData.affiliateLink, // Sempre atualiza a URL também
           slug: slug
         };
 
@@ -135,19 +136,21 @@ export async function GET() {
         await Coupon.findOneAndUpdate(
           { externalId: couponData.id, provider: 'lomadee' },
           {
-            title: couponData.description,
-            description: couponData.description,
-            type: 'COUPON',
-            code: couponData.code || '',
-            store: store._id,
-            url: couponData.link,
-            affiliateLink: couponData.link,
-            slug: slug,
-            expiresAt: expiresAt,
-            discount: couponData.discount?.toString() || '',
-            active: true,
-            provider: 'lomadee',
-            externalId: couponData.id
+            $set: { // Usando $set para garantir que todos os campos sejam atualizados
+              title: couponData.description,
+              description: couponData.description,
+              type: 'COUPON',
+              code: couponData.code || '',
+              store: store._id,
+              url: couponData.link, // Sempre atualiza a URL
+              affiliateLink: couponData.link, // Sempre atualiza o link de afiliado
+              slug: slug,
+              expiresAt: expiresAt,
+              discount: couponData.discount?.toString() || '',
+              active: true,
+              provider: 'lomadee',
+              externalId: couponData.id
+            }
           },
           { upsert: true }
         );
