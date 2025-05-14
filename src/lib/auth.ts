@@ -17,7 +17,7 @@ import mongoose from 'mongoose';
 import connectDB from '@/lib/mongodb';
 
 export const authOptions: NextAuthOptions = {
-  secret: process.env.NEXTAUTH_SECRET || 'your-secret-key-here',
+  secret: process.env.NEXTAUTH_SECRET,
   debug: process.env.NODE_ENV === 'development',
   providers: [
     CredentialsProvider({

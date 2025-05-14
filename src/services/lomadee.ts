@@ -40,10 +40,10 @@ interface LomadeeCouponResponse {
 }
 
 export class LomadeeService {
-  private appToken = '17457627443735fab3c6f';
+  private appToken: string;
   private sourceId = '38359488';
 
-  constructor(appToken: string = '17457627443735fab3c6f', sourceId: string = '38359488') {
+  constructor(appToken: string = process.env.LOMADEE_APP_TOKEN || '', sourceId: string = process.env.LOMADEE_SOURCE_ID || '') {
     this.appToken = appToken;
     this.sourceId = sourceId;
 
