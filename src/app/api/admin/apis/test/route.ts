@@ -8,6 +8,18 @@ const API_URL = 'https://api.lomadee.com/v2';
 const APP_TOKEN = '17457627443735fab3c6f';
 const SOURCE_ID = '38359488';
 
+// Função para atualizar o sourceId nos links
+function updateSourceId(url: string): string {
+  try {
+    const urlObj = new URL(url);
+    urlObj.searchParams.set('sourceId', SOURCE_ID);
+    return urlObj.toString();
+  } catch (error) {
+    console.error('Erro ao atualizar sourceId no link:', error);
+    return url;
+  }
+}
+
 export async function GET() {
   try {
     console.log('Iniciando importação...');
@@ -64,14 +76,17 @@ export async function GET() {
         // Primeiro, verifica se a loja já existe
         let existingStore = await Store.findOne({ externalId, provider: 'lomadee' });
         
+        // Atualiza os links com o sourceId correto
+        const updatedAffiliateLink = updateSourceId(storeData.affiliateLink);
+        
         // Prepara os dados para atualização - sempre atualiza o link de afiliado
         const updateData = {
           name: storeData.name,
           active: true,
           provider: 'lomadee',
           externalId: externalId,
-          affiliateLink: storeData.affiliateLink, // Sempre atualiza o link
-          url: storeData.affiliateLink, // Sempre atualiza a URL também
+          affiliateLink: updatedAffiliateLink, // Link com sourceId atualizado
+          url: updatedAffiliateLink, // URL com sourceId atualizado
           slug: slug
         };
 
@@ -142,8 +157,8 @@ export async function GET() {
               type: 'COUPON',
               code: couponData.code || '',
               store: store._id,
-              url: couponData.link, // Sempre atualiza a URL
-              affiliateLink: couponData.link, // Sempre atualiza o link de afiliado
+              url: updateSourceId(couponData.link), // Atualiza URL com sourceId correto
+              affiliateLink: updateSourceId(couponData.link), // Atualiza link com sourceId correto
               slug: slug,
               expiresAt: expiresAt,
               discount: couponData.discount?.toString() || '',
