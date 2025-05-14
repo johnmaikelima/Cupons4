@@ -1,8 +1,4 @@
 {
-  "/api/auth/[...nextauth]/route": "app/api/auth/[...nextauth]/route.js",
-  "/api/auth/register/route": "app/api/auth/register/route.js",
-  "/favicon.ico/route": "app/favicon.ico/route.js",
-  "/api/admin/settings/route": "app/api/admin/settings/route.js",
   "/register/page": "app/register/page.js",
   "/admin/pages/page": "app/admin/pages/page.js",
   "/admin/page": "app/admin/page.js",
