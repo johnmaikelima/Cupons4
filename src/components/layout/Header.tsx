@@ -40,13 +40,24 @@ export default function Header() {
   ];
 
   return (
-    <header className="bg-white border-b border-gray-100 sticky top-0 z-50">
-      <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
+    <header className="bg-white border-b border-gray-100 sticky top-0 z-50 shadow-sm">
+      <div className="container mx-auto px-4 md:px-8">
+        <div className="flex items-center h-20 md:h-24 md:justify-between md:gap-8">
+          {/* Menu Button - Mobile */}
+          <button
+            onClick={() => setIsMenuOpen(true)}
+            className="p-2 hover:bg-gray-100 rounded-lg transition-colors md:hidden"
+            aria-label="Menu"
+          >
+            <FiMenu className="w-6 h-6" />
+          </button>
           {/* Logo */}
-          <Link href="/" className="flex items-center">
+          <Link 
+            href="/" 
+            className="flex items-center justify-center flex-1 md:flex-none md:w-1/5"
+          >
             {config.logo ? (
-              <div className="relative h-8 w-32">
+              <div className="relative h-10 w-40 md:h-12 md:w-48 transition-all duration-200">
                 <Image
                   src={config.logo}
                   alt={config.name}
@@ -56,31 +67,34 @@ export default function Header() {
                 />
               </div>
             ) : (
-              <span className="text-xl font-semibold">{config.name}</span>
+              <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-blue-400 bg-clip-text text-transparent">
+                {config.name}
+              </span>
             )}
           </Link>
 
           {/* Busca */}
-          <form onSubmit={handleSearch} className="hidden md:flex flex-1 max-w-xl mx-4">
+          <form onSubmit={handleSearch} className="hidden md:flex flex-1 max-w-2xl">
             <div className="relative w-full">
               <input
                 type="search"
                 placeholder="Buscar lojas ou cupons..."
-                className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-colors"
+                className="w-full pl-12 pr-4 py-3 rounded-full border border-gray-200 bg-gray-50 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 text-gray-700 placeholder-gray-400"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
-              <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
             </div>
           </form>
 
-          {/* Menu Button */}
+          {/* Menu Button - Desktop */}
           <button
             onClick={() => setIsMenuOpen(true)}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            className="hidden md:flex md:w-1/5 md:justify-end p-3 hover:bg-gray-100 rounded-lg transition-all duration-200 items-center gap-2 font-medium text-gray-700 hover:text-gray-900"
             aria-label="Menu"
           >
-            <FiMenu className="w-6 h-6" />
+            <FiMenu className="w-5 h-5" />
+            <span>Menu</span>
           </button>
         </div>
       </div>
@@ -133,17 +147,17 @@ export default function Header() {
       </AnimatePresence>
 
       {/* Busca Mobile */}
-      <div className="md:hidden border-t border-gray-100">
+      <div className="md:hidden border-t border-gray-100 bg-gray-50">
         <form onSubmit={handleSearch} className="p-4">
           <div className="relative">
             <input
               type="search"
               placeholder="Buscar lojas ou cupons..."
-              className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-colors"
+              className="w-full pl-12 pr-4 py-3 rounded-full border border-gray-200 bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 text-gray-700 placeholder-gray-400 shadow-sm"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
-            <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+            <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
           </div>
         </form>
       </div>

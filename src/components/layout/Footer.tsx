@@ -23,15 +23,15 @@ const footerLinks = [
 
 export default function Footer() {
   return (
-    <footer className="bg-gray-50 border-t border-gray-100">
-      <div className="container mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+    <footer className="bg-[#1F55DE] text-white">
+      <div className="container mx-auto px-4 py-16 md:py-20">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-12 md:gap-8">
           {/* Logo e Descrição */}
           <div>
             <Link href="/" className="inline-block">
-              <span className="text-xl font-bold text-blue-600">LinkCompra</span>
+              <span className="text-2xl font-bold bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent">LinkCompra</span>
             </Link>
-            <p className="mt-4 text-gray-600">
+            <p className="mt-4 text-blue-100/90 leading-relaxed">
               Encontre os melhores cupons de desconto e ofertas das principais lojas do Brasil.
             </p>
           </div>
@@ -39,13 +39,13 @@ export default function Footer() {
           {/* Links do Footer */}
           {footerLinks.map((section) => (
             <div key={section.title}>
-              <h3 className="font-semibold text-gray-900 mb-4">{section.title}</h3>
-              <ul className="space-y-2">
+              <h3 className="font-semibold text-white/90 mb-6 text-lg">{section.title}</h3>
+              <ul className="space-y-3">
                 {section.links.map((link) => (
                   <li key={link.href}>
                     <Link
                       href={link.href}
-                      className="text-gray-600 hover:text-blue-600 transition-colors"
+                      className="text-blue-100/80 hover:text-white transition-colors duration-200"
                     >
                       {link.label}
                     </Link>
@@ -57,13 +57,13 @@ export default function Footer() {
         </div>
 
         {/* Copyright */}
-        <div className="mt-12 pt-8 border-t border-gray-200">
+        <div className="mt-16 pt-8 border-t border-white/10">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-gray-600 text-sm text-center md:text-left">
+            <p className="text-blue-100/80 text-sm text-center md:text-left">
               © {new Date().getFullYear()} LinkCompra. Todos os direitos reservados.
             </p>
-            <p className="text-gray-600 text-sm flex items-center gap-1">
-              Feito com <FiHeart className="text-red-500" /> no Brasil
+            <p className="text-blue-100/80 text-sm flex items-center gap-2">
+              Feito com <FiHeart className="text-pink-400 animate-pulse" /> no Brasil
             </p>
           </div>
         </div>
