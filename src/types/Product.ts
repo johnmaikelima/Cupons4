@@ -5,7 +5,7 @@ export interface UnifiedProduct {
   thumbnail: string;
   link: string;
   storeName: string;
-  source: 'amazon' | 'aliexpress';
+  source: 'amazon' | 'aliexpress' | 'lomadee';
   originalData?: any; // dados originais caso precise
 }
 

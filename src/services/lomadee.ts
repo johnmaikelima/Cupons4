@@ -1,3 +1,30 @@
+export interface LomadeeProduct {
+  id: number;
+  name: string;
+  price: number;
+  thumbnail: string;
+  link: string;
+  storeName: string;
+}
+
+export interface LomadeeProductResponse {
+  requestInfo: {
+    status: string;
+    message: string;
+    generatedDate: string;
+  };
+  products: {
+    id: number;
+    name: string;
+    price: number;
+    thumbnail: string;
+    link: string;
+    store: {
+      name: string;
+    };
+  }[];
+}
+
 export interface LomadeeCoupon {
   id: number;
   code: string;
@@ -164,5 +191,46 @@ export class LomadeeService {
       discount: coupon.discount,
       status: coupon.status
     }));
+  }
+
+  async getProducts(query: string): Promise<LomadeeProduct[]> {
+    try {
+      // Busca produtos usando a API de ofertas da Lomadee
+      const url = `https://api.lomadee.com/v2/${this.appToken}/offer/_search?sourceId=${this.sourceId}&keyword=${encodeURIComponent(query)}`;
+      console.log('Buscando produtos na Lomadee:', url);
+
+      const response = await fetch(url);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Erro na API de produtos da Lomadee:', {
+          status: response.status,
+          statusText: response.statusText,
+          url: url,
+          errorText
+        });
+        throw new Error(`Erro na API da Lomadee: ${response.statusText} - ${errorText}`);
+      }
+
+      const data: LomadeeProductResponse = await response.json();
+      console.log('Produtos recebidos da Lomadee:', {
+        status: data.requestInfo?.status,
+        message: data.requestInfo?.message,
+        count: data.products?.length || 0
+      });
+
+      // Transforma os produtos no formato unificado
+      return data.products.map(product => ({
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        thumbnail: product.thumbnail,
+        link: this.generateAffiliateLink(product.link),
+        storeName: product.store.name
+      }));
+    } catch (error) {
+      console.error('Erro ao buscar produtos da Lomadee:', error);
+      return [];
+    }
   }
 }

@@ -1,7 +1,7 @@
 import { cache } from 'react';
 import { UnifiedProduct, ProductsResponse, SortDirection } from '../types/Product';
 import { searchAmazonProducts } from './amazon';
-// import { searchAliExpressProducts } from './aliexpress';
+import { LomadeeService } from './lomadee';
 
 // Cache por 5 minutos
 export const CACHE_DURATION = 5 * 60 * 1000;
@@ -12,14 +12,18 @@ export const getUnifiedProducts = cache(async (
   sort: SortDirection = 'asc'
 ): Promise<ProductsResponse> => {
   try {
+    // Inicializa o serviço da Lomadee
+    const lomadeeService = new LomadeeService();
+
     // Busca produtos de todas as fontes em paralelo
-    const [amazonProducts] = await Promise.all([
+    const [amazonProducts, lomadeeProducts] = await Promise.all([
       searchAmazonProducts(query),
-      // searchAliExpressProducts(query)
+      lomadeeService.getProducts(query)
     ]);
 
     // Unifica os produtos
     const unifiedProducts: UnifiedProduct[] = [
+      // Produtos da Amazon
       ...amazonProducts.map(p => ({
         id: p.name, // usando o nome como id temporário já que não temos ASIN
         name: p.name,
@@ -30,7 +34,17 @@ export const getUnifiedProducts = cache(async (
         source: 'amazon' as const,
         originalData: p
       })),
-      // ...aliexpressProducts.map(...)
+      // Produtos da Lomadee
+      ...lomadeeProducts.map(p => ({
+        id: p.id.toString(),
+        name: p.name,
+        price: p.price,
+        thumbnail: p.thumbnail,
+        link: p.link,
+        storeName: p.storeName,
+        source: 'lomadee' as const,
+        originalData: p
+      }))
     ];
 
     // Ordena os produtos
