@@ -5,7 +5,7 @@ import connectDB from '@/lib/mongodb';
 import { OffersClient } from '@/components/OffersClient';
 import { CategoryDisplay } from '@/components/CategoryDisplay';
 import { MobileFiltersToggle } from '@/components/MobileFiltersToggle';
-import { AIArticle } from '@/components/AIArticle';
+
 
 // Isso garante que a página será renderizada estaticamente
 export const revalidate = 3600; // revalidar a cada 1 hora
@@ -62,8 +62,7 @@ export default async function DynamicPage({ params }: { params: { slug: string }
           </section>
         )}
 
-        {/* Artigo gerado por IA */}
-        <AIArticle searchTerm={params.slug} />
+
       </article>
     </div>
   );

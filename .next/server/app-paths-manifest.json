@@ -1,9 +1,7 @@
 {
   "/api/admin/settings/route": "app/api/admin/settings/route.js",
   "/api/auth/[...nextauth]/route": "app/api/auth/[...nextauth]/route.js",
-  "/favicon.ico/route": "app/favicon.ico/route.js",
   "/api/amazon/search/route": "app/api/amazon/search/route.js",
-  "/api/generate/route": "app/api/generate/route.js",
   "/page": "app/page.js",
   "/[slug]/page": "app/[slug]/page.js"
 }
