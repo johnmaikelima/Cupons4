@@ -1,5 +1,10 @@
 {
   "pages": {
+    "/api/auth/[...nextauth]/route": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/api/auth/[...nextauth]/route.js"
+    ],
     "/layout": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
@@ -11,60 +16,26 @@
       "static/chunks/main-app.js",
       "static/chunks/app/not-found.js"
     ],
-    "/lojas/page": [
+    "/[slug]/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/lojas/page.js"
-    ],
-    "/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/page.js"
-    ],
-    "/cupons/layout": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/cupons/layout.js"
-    ],
-    "/cupons/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/cupons/page.js"
-    ],
-    "/busca/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/busca/page.js"
+      "static/css/app/[slug]/page.css",
+      "static/chunks/app/[slug]/page.js"
     ],
     "/api/admin/settings/route": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/api/admin/settings/route.js"
     ],
-    "/api/stores/search/route": [
+    "/api/amazon/search/route": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/api/stores/search/route.js"
+      "static/chunks/app/api/amazon/search/route.js"
     ],
-    "/api/auth/[...nextauth]/route": [
+    "/api/generate/route": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/api/auth/[...nextauth]/route.js"
-    ],
-    "/api/coupons/search/route": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/api/coupons/search/route.js"
-    ],
-    "/lojas/[slug]/layout": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/lojas/[slug]/layout.js"
-    ],
-    "/lojas/[slug]/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/lojas/[slug]/page.js"
+      "static/chunks/app/api/generate/route.js"
     ]
   }
 }

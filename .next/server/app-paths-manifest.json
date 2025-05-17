@@ -1,7 +1,8 @@
 {
   "/api/auth/[...nextauth]/route": "app/api/auth/[...nextauth]/route.js",
-  "/page": "app/page.js",
-  "/busca/page": "app/busca/page.js",
-  "/lojas/page": "app/lojas/page.js",
-  "/lojas/[slug]/page": "app/lojas/[slug]/page.js"
+  "/api/admin/settings/route": "app/api/admin/settings/route.js",
+  "/api/amazon/search/route": "app/api/amazon/search/route.js",
+  "/api/generate/route": "app/api/generate/route.js",
+  "/favicon.ico/route": "app/favicon.ico/route.js",
+  "/[slug]/page": "app/[slug]/page.js"
 }

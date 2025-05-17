@@ -83,7 +83,7 @@ const DynamicOffers: React.FC<DynamicOffersProps> = ({ searchTerm }) => {
   });
 
   // Paginar os produtos já ordenados
-  const itemsPerPage = 12; // ou outro número que você preferir
+  const itemsPerPage = 25; // Aumentado para mostrar todos os produtos da API da Amazon
   const [currentPage, setCurrentPage] = useState(1);
 
   const indexOfLastItem = currentPage * itemsPerPage;

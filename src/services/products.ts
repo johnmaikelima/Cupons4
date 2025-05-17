@@ -21,12 +21,12 @@ export const getUnifiedProducts = cache(async (
     // Unifica os produtos
     const unifiedProducts: UnifiedProduct[] = [
       ...amazonProducts.map(p => ({
-        id: p.asin,
-        name: p.title,
+        id: p.name, // usando o nome como id temporário já que não temos ASIN
+        name: p.name,
         price: p.price,
-        thumbnail: p.image,
-        link: p.url,
-        storeName: 'Amazon',
+        thumbnail: p.thumbnail,
+        link: p.link,
+        storeName: p.storeName,
         source: 'amazon' as const,
         originalData: p
       })),
