@@ -84,6 +84,24 @@ export default function CouponsPage() {
     });
   };
 
+  const handleDeleteSingle = async (id: string) => {
+    try {
+      const response = await fetch(`/api/coupons/${id}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) throw new Error('Erro ao excluir cupom');
+
+      // Remove o cupom excluído do estado
+      setCoupons(prev => prev.filter(coupon => coupon._id !== id));
+      setSelectedCoupons(prev => prev.filter(selectedId => selectedId !== id));
+      alert('Cupom excluído com sucesso!');
+    } catch (error) {
+      alert('Erro ao excluir cupom. Tente novamente.');
+      console.error(error);
+    }
+  };
+
   const handleDelete = async () => {
     if (!selectedCoupons.length) return;
     
@@ -220,12 +238,24 @@ export default function CouponsPage() {
                   )}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <Link
-                    href={`/admin/coupons/${coupon._id}`}
-                    className="text-blue-600 hover:text-blue-900"
-                  >
-                    Editar
-                  </Link>
+                  <div className="flex justify-end gap-4">
+                    <Link
+                      href={`/admin/coupons/${coupon._id}`}
+                      className="text-blue-600 hover:text-blue-900"
+                    >
+                      Editar
+                    </Link>
+                    <button
+                      onClick={() => {
+                        if (confirm('Tem certeza que deseja excluir este cupom?')) {
+                          handleDeleteSingle(coupon._id);
+                        }
+                      }}
+                      className="text-red-600 hover:text-red-900"
+                    >
+                      Excluir
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
