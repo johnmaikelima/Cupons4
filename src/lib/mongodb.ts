@@ -16,44 +16,43 @@ let cached: CachedConnection = global.mongoConnection;
 
 async function connectDB() {
   if (cached.client) {
-    return cached.client;
-  }
-
-  if (!cached.promise) {
-    const mongoUri = process.env.MONGODB_URI;
-    if (!mongoUri) {
-      throw new Error('MONGODB_URI não configurado nas variáveis de ambiente');
+    try {
+      // Verifica se a conexão existente está viva
+      await cached.client.db('admin').command({ ping: 1 });
+      return cached.client;
+    } catch (e) {
+      console.warn('Conexão existente inválida, reconectando...');
+      cached.client = null;
+      cached.promise = null;
     }
-
-    const opts: MongoClientOptions = {
-      maxPoolSize: 10,
-      minPoolSize: 5,
-      maxIdleTimeMS: 60000,
-      connectTimeoutMS: 10000,
-      socketTimeoutMS: 45000,
-      serverSelectionTimeoutMS: 5000,
-      retryWrites: true,
-      retryReads: true,
-      w: 'majority'
-    };
-
-    cached.promise = MongoClient.connect(mongoUri, opts)
-      .then((client) => {
-        console.log('Nova conexão MongoDB estabelecida');
-        return client;
-      })
-      .catch((error) => {
-        console.error('Erro ao conectar com MongoDB:', error);
-        cached.promise = null;
-        throw error;
-      });
   }
+
+  const mongoUri = process.env.MONGODB_URI;
+  if (!mongoUri) {
+    throw new Error('MONGODB_URI não configurado nas variáveis de ambiente');
+  }
+
+  const opts: MongoClientOptions = {
+    maxPoolSize: 5,
+    minPoolSize: 2,
+    maxIdleTimeMS: 120000,
+    connectTimeoutMS: 30000,
+    socketTimeoutMS: 75000,
+    serverSelectionTimeoutMS: 30000,
+    retryWrites: true,
+    retryReads: true,
+    w: 'majority',
+    keepAlive: true,
+    keepAliveInitialDelay: 300000
+  };
 
   try {
+    if (!cached.promise) {
+      cached.promise = MongoClient.connect(mongoUri, opts);
+    }
+
     cached.client = await cached.promise;
-    
-    // Verifica se a conexão está realmente viva
-    await cached.client.db('admin').command({ ping: 1 });
+    console.log('Nova conexão MongoDB estabelecida');
     
     return cached.client;
   } catch (e) {
