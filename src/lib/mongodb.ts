@@ -15,7 +15,7 @@ if (!global.mongoConnection) {
 
 let cached: CachedConnection = global.mongoConnection;
 
-async function connectDB() {
+export async function connectDB() {
   // Configura timeout global do Mongoose
   mongoose.set('bufferTimeoutMS', 30000);
 
@@ -52,4 +52,4 @@ async function connectDB() {
   }
 }
 
-export default connectDB;
+

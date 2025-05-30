@@ -26,25 +26,25 @@
       "static/chunks/main-app.js",
       "static/chunks/app/admin/comparacao-de-preco/page.js"
     ],
-    "/api/admin/comparison-products/batch/route": [
+    "/api/admin/settings/route": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/api/admin/comparison-products/batch/route.js"
+      "static/chunks/app/api/admin/settings/route.js"
     ],
     "/api/categories/route": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/api/categories/route.js"
     ],
-    "/api/admin/settings/route": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/api/admin/settings/route.js"
-    ],
     "/api/admin/comparison-products/route": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/api/admin/comparison-products/route.js"
+    ],
+    "/api/admin/comparison-products/batch/route": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/api/admin/comparison-products/batch/route.js"
     ]
   }
 }

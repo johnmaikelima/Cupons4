@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import { connectDB } from '@/lib/mongodb';
 import AdminLayout from '@/components/admin/AdminLayout';
 import CsvUploader from '@/components/admin/CsvUploader';
 import { IComparisonProduct } from '@/models/ComparisonProduct';

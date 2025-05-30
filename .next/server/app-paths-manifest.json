@@ -1,4 +1,6 @@
 {
+  "/api/auth/[...nextauth]/route": "app/api/auth/[...nextauth]/route.js",
   "/favicon.ico/route": "app/favicon.ico/route.js",
+  "/api/admin/comparison-products/route": "app/api/admin/comparison-products/route.js",
   "/admin/comparacao-de-preco/page": "app/admin/comparacao-de-preco/page.js"
 }
