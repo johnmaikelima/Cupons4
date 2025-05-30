@@ -78,9 +78,6 @@ storeSchema.virtual('storeCoupons', {
 let StoreModel: mongoose.Model<any>;
 
 try {
-  // Configura timeout global do Mongoose
-  mongoose.set('bufferTimeoutMS', 30000);
-  
   // Tenta obter o modelo existente
   StoreModel = mongoose.models.Store || mongoose.model('Store', storeSchema);
 

@@ -1,4 +1,5 @@
 import { MongoClient, MongoClientOptions } from 'mongodb';
+import mongoose from 'mongoose';
 
 interface CachedConnection {
   client: MongoClient | null;
@@ -18,21 +19,14 @@ async function connectDB() {
   // Configura timeout global do Mongoose
   mongoose.set('bufferTimeoutMS', 30000);
 
-  if (cached.client) {
-    try {
-      // Verifica se a conexão existente está viva
-      await cached.client.db('admin').command({ ping: 1 });
-      return cached.client;
-    } catch (e) {
-      console.warn('Conexão existente inválida, reconectando...');
-      cached.client = null;
-      cached.promise = null;
-    }
-  }
-
   const mongoUri = process.env.MONGODB_URI;
   if (!mongoUri) {
     throw new Error('MONGODB_URI não configurado nas variáveis de ambiente');
+  }
+
+  // Se já existe uma conexão Mongoose, retorna o cliente MongoDB
+  if (mongoose.connection.readyState === 1) {
+    return mongoose.connection.getClient();
   }
 
   const opts: MongoClientOptions = {
@@ -47,21 +41,13 @@ async function connectDB() {
   };
 
   try {
-    if (!cached.promise) {
-      cached.promise = MongoClient.connect(mongoUri, opts);
-    }
-
-    cached.client = await cached.promise;
+    // Conecta usando o Mongoose
+    await mongoose.connect(mongoUri, opts);
     console.log('Nova conexão MongoDB estabelecida');
     
-    // Configura o timeout do Mongoose após a conexão ser estabelecida
-    mongoose.connection.db.serverConfig.s.options.serverSelectionTimeoutMS = 30000;
-    
-    return cached.client;
+    return mongoose.connection.getClient();
   } catch (e) {
     console.error('Erro na conexão MongoDB:', e);
-    cached.client = null;
-    cached.promise = null;
     throw e;
   }
 }
