@@ -3,14 +3,6 @@
 import { Suspense } from 'react';
 import SearchResults from './search-results';
 
-export default function SearchPage() {
-  return (
-    <Suspense fallback={<SearchLoading />}>
-      <SearchResults />
-    </Suspense>
-  );
-}
-
 function SearchLoading() {
   return (
     <div className="min-h-screen bg-gray-50 py-12">
@@ -28,4 +20,10 @@ function SearchLoading() {
   );
 }
 
+export default function SearchPage() {
+  return (
+    <Suspense fallback={<SearchLoading />}>
+      <SearchResults />
+    </Suspense>
+  );
 }
