@@ -96,6 +96,11 @@
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/produtos/page.js"
+    ],
+    "/api/products/search/route": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/api/products/search/route.js"
     ]
   }
 }
