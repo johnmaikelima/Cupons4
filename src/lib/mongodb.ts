@@ -33,17 +33,15 @@ async function connectDB() {
   }
 
   const opts: MongoClientOptions = {
-    maxPoolSize: 5,
-    minPoolSize: 2,
-    maxIdleTimeMS: 120000,
+    maxPoolSize: 3,
+    minPoolSize: 1,
+    maxIdleTimeMS: 60000,
     connectTimeoutMS: 30000,
-    socketTimeoutMS: 75000,
+    socketTimeoutMS: 45000,
     serverSelectionTimeoutMS: 30000,
     retryWrites: true,
     retryReads: true,
-    w: 'majority',
-    keepAlive: true,
-    keepAliveInitialDelay: 300000
+    w: 'majority'
   };
 
   try {
