@@ -78,15 +78,21 @@ storeSchema.virtual('storeCoupons', {
 let StoreModel: mongoose.Model<any>;
 
 try {
+  // Configura timeouts globais do Mongoose
+  mongoose.set('bufferTimeoutMS', 30000);
+  mongoose.set('serverSelectionTimeoutMS', 30000);
+  
   // Tenta obter o modelo existente
   StoreModel = mongoose.models.Store || mongoose.model('Store', storeSchema);
 
-  // Sincroniza os índices em background
-  StoreModel.syncIndexes().then(() => {
-    console.log('=> Store indexes synchronized');
-  }).catch((error) => {
-    console.error('Error syncing Store indexes:', error);
-  });
+  // Não sincroniza índices durante o build
+  if (process.env.NODE_ENV !== 'production') {
+    StoreModel.syncIndexes().then(() => {
+      console.log('=> Store indexes synchronized');
+    }).catch((error) => {
+      console.error('Error syncing Store indexes:', error);
+    });
+  }
 } catch (error) {
   console.error('Error creating Store model:', error);
   throw error;

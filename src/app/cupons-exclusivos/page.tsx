@@ -9,14 +9,25 @@ export const metadata: Metadata = {
   description: 'Encontre os melhores cupons exclusivos das principais lojas do Brasil.',
 };
 
-async function getExclusiveCoupons() {
-  await connectDB();
-  const coupons = await Coupon.find({ exclusive: true })
-    .populate('store')
-    .sort({ createdAt: -1 })
-    .lean();
+async function getExclusiveCoupons(retryCount = 0) {
+  try {
+    await connectDB();
+    const coupons = await Coupon.find({ exclusive: true })
+      .populate('store')
+      .sort({ createdAt: -1 })
+      .lean();
 
-  return JSON.parse(JSON.stringify(coupons));
+    return JSON.parse(JSON.stringify(coupons));
+  } catch (error) {
+    console.error(`Tentativa ${retryCount + 1} falhou:`, error);
+    if (retryCount < 2) { // Tenta no máximo 3 vezes
+      await new Promise(resolve => setTimeout(resolve, 1000 * (retryCount + 1)));
+      return getExclusiveCoupons(retryCount + 1);
+    }
+    // Se todas as tentativas falharem, retorna uma lista vazia
+    console.error('Todas as tentativas falharam, retornando lista vazia');
+    return [];
+  }
 }
 
 export default async function ExclusiveCouponsPage() {
