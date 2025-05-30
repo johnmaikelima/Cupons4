@@ -15,6 +15,9 @@ if (!global.mongoConnection) {
 let cached: CachedConnection = global.mongoConnection;
 
 async function connectDB() {
+  // Configura timeout global do Mongoose
+  mongoose.set('bufferTimeoutMS', 30000);
+
   if (cached.client) {
     try {
       // Verifica se a conexão existente está viva
@@ -38,7 +41,6 @@ async function connectDB() {
     maxIdleTimeMS: 60000,
     connectTimeoutMS: 30000,
     socketTimeoutMS: 45000,
-    serverSelectionTimeoutMS: 30000,
     retryWrites: true,
     retryReads: true,
     w: 'majority'
@@ -51,6 +53,9 @@ async function connectDB() {
 
     cached.client = await cached.promise;
     console.log('Nova conexão MongoDB estabelecida');
+    
+    // Configura o timeout do Mongoose após a conexão ser estabelecida
+    mongoose.connection.db.serverConfig.s.options.serverSelectionTimeoutMS = 30000;
     
     return cached.client;
   } catch (e) {
