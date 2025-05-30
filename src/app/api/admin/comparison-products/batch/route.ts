@@ -1,8 +1,26 @@
 import { NextResponse } from 'next/server';
-import connectToDatabase from '@/lib/mongodb';
+import { connectDB } from '@/lib/mongodb';
+import mongoose from 'mongoose';
 import slugify from 'slugify';
 
-export async function POST(request: Request) {
+// Define o schema do produto
+const ComparisonProductSchema = new mongoose.Schema({
+  name: String,
+  description: String,
+  ean: String,
+  category: String,
+  imageUrl: String,
+  slug: String,
+  prices: [],
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now }
+});
+
+// Obtém ou cria o modelo
+const ComparisonProduct = mongoose.models.ComparisonProduct || 
+  mongoose.model('ComparisonProduct', ComparisonProductSchema);
+
+export async function POST(request: NextRequest) {
   try {
     const { products } = await request.json();
 
@@ -20,16 +38,8 @@ export async function POST(request: Request) {
       );
     }
 
-    console.log('Conectando ao MongoDB...');
-    const conn = await connectToDatabase();
-    console.log('Conexão:', conn);
-    
-    if (!conn.db) {
-      console.error('Erro: db não encontrado na conexão');
-      throw new Error('Erro de conexão com o banco de dados');
-    }
-    
-    const collection = conn.db.collection('comparison_products');
+    // Conecta ao MongoDB usando Mongoose
+    await connectDB();
 
     // Processa cada produto
     const processedProducts = products.map(product => {
@@ -48,8 +58,8 @@ export async function POST(request: Request) {
 
     console.log('Produtos processados:', processedProducts);
 
-    // Insere os produtos em lote
-    const result = await collection.insertMany(processedProducts, { ordered: false });
+    // Insere os produtos em lote usando Mongoose
+    const result = await ComparisonProduct.insertMany(processedProducts);
 
     console.log('Resultado da inserção:', result);
 
