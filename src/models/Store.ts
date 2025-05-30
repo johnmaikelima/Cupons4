@@ -74,10 +74,23 @@ storeSchema.virtual('storeCoupons', {
   foreignField: 'store'
 });
 
-// Deleta o modelo existente se ele existir
-if (mongoose.models.Store) {
-  delete mongoose.models.Store;
+// Cria ou recupera o modelo
+let StoreModel: mongoose.Model<any>;
+
+try {
+  // Tenta obter o modelo existente
+  StoreModel = mongoose.models.Store || mongoose.model('Store', storeSchema);
+
+  // Sincroniza os índices em background
+  StoreModel.syncIndexes().then(() => {
+    console.log('=> Store indexes synchronized');
+  }).catch((error) => {
+    console.error('Error syncing Store indexes:', error);
+  });
+} catch (error) {
+  console.error('Error creating Store model:', error);
+  throw error;
 }
 
-// Cria o modelo
-export const Store = mongoose.model('Store', storeSchema);
+// Exporta o modelo
+export const Store = StoreModel;

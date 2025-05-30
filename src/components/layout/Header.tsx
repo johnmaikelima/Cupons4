@@ -3,8 +3,10 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { FiMenu, FiSearch, FiX } from 'react-icons/fi';
+import { FiMenu, FiX } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
+import SearchBox from '@/components/SearchBox';
+import CategoryMenu from '@/components/CategoryMenu';
 
 interface SiteConfig {
   logo: string;
@@ -13,7 +15,6 @@ interface SiteConfig {
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
   const [config, setConfig] = useState<SiteConfig>({ logo: '', name: 'LinkCompra' });
 
   useEffect(() => {
@@ -27,11 +28,6 @@ export default function Header() {
       })
       .catch(console.error);
   }, []);
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    window.location.href = `/busca?q=${encodeURIComponent(searchQuery)}`;
-  };
 
   const menuLinks = [
     { href: '/', label: 'Início' },
@@ -74,18 +70,9 @@ export default function Header() {
           </Link>
 
           {/* Busca */}
-          <form onSubmit={handleSearch} className="hidden md:flex flex-1 max-w-2xl">
-            <div className="relative w-full">
-              <input
-                type="search"
-                placeholder="Buscar lojas ou cupons..."
-                className="w-full pl-12 pr-4 py-3 rounded-full border border-gray-200 bg-gray-50 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 text-gray-700 placeholder-gray-400"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-              <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
-            </div>
-          </form>
+          <div className="hidden md:flex flex-1 max-w-2xl">
+            <SearchBox />
+          </div>
 
           {/* Menu Button - Desktop */}
           <button
@@ -148,19 +135,13 @@ export default function Header() {
 
       {/* Busca Mobile */}
       <div className="md:hidden border-t border-gray-100 bg-gray-50">
-        <form onSubmit={handleSearch} className="p-4">
-          <div className="relative">
-            <input
-              type="search"
-              placeholder="Buscar lojas ou cupons..."
-              className="w-full pl-12 pr-4 py-3 rounded-full border border-gray-200 bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 text-gray-700 placeholder-gray-400 shadow-sm"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-            <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
-          </div>
-        </form>
+        <div className="p-4">
+          <SearchBox />
+        </div>
       </div>
+
+      {/* Menu de Categorias */}
+      <CategoryMenu />
     </header>
   );
 }

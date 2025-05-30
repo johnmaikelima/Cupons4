@@ -5,8 +5,13 @@ export interface UnifiedProduct {
   thumbnail: string;
   link: string;
   storeName: string;
-  source: 'amazon' | 'aliexpress' | 'lomadee';
+  source: 'amazon' | 'aliexpress' | 'lomadee' | 'shopee' | 'csv';
   originalData?: any; // dados originais caso precise
+  rating?: number;
+  description?: string;
+  merchant_name?: string;
+  currency?: string;
+  ean?: string;
 }
 
 export type SortDirection = 'asc' | 'desc';

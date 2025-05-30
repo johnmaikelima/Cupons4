@@ -1,0 +1,38 @@
+.offers-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding: 0 20px;
+}
+
+.offers-stats {
+  font-size: 0.875rem;
+  color: #666;
+}
+
+.offers-sort {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sort-select {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background-color: white;
+  font-size: 14px;
+  min-width: 140px;
+  cursor: pointer;
+}
+
+.sort-select:hover {
+  border-color: #999;
+}
+
+.sort-select:focus {
+  outline: none;
+  border-color: #0070f3;
+  box-shadow: 0 0 0 2px rgba(0,112,243,0.2);
+}

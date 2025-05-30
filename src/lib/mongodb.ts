@@ -1,38 +1,67 @@
-import mongoose from 'mongoose';
+import { MongoClient, MongoClientOptions } from 'mongodb';
 
-if (!process.env.MONGODB_URI) {
-  throw new Error('Please define the MONGODB_URI environment variable inside .env');
+interface CachedConnection {
+  client: MongoClient | null;
+  promise: Promise<MongoClient> | null;
 }
 
-let cached = global.mongoose;
-
-if (!cached) {
-  cached = global.mongoose = { conn: null, promise: null };
+if (!global.mongoConnection) {
+  global.mongoConnection = {
+    client: null,
+    promise: null,
+  };
 }
+
+let cached: CachedConnection = global.mongoConnection;
 
 async function connectDB() {
-  if (cached.conn) {
-    return cached.conn;
+  if (cached.client) {
+    return cached.client;
   }
 
   if (!cached.promise) {
-    const opts = {
-      bufferCommands: true,
+    const mongoUri = process.env.MONGODB_URI;
+    if (!mongoUri) {
+      throw new Error('MONGODB_URI não configurado nas variáveis de ambiente');
+    }
+
+    const opts: MongoClientOptions = {
+      maxPoolSize: 10,
+      minPoolSize: 5,
+      maxIdleTimeMS: 60000,
+      connectTimeoutMS: 10000,
+      socketTimeoutMS: 45000,
+      serverSelectionTimeoutMS: 5000,
+      retryWrites: true,
+      retryReads: true,
+      w: 'majority'
     };
 
-    cached.promise = mongoose.connect(process.env.MONGODB_URI!, opts).then((mongoose) => {
-      return mongoose;
-    });
+    cached.promise = MongoClient.connect(mongoUri, opts)
+      .then((client) => {
+        console.log('Nova conexão MongoDB estabelecida');
+        return client;
+      })
+      .catch((error) => {
+        console.error('Erro ao conectar com MongoDB:', error);
+        cached.promise = null;
+        throw error;
+      });
   }
 
   try {
-    cached.conn = await cached.promise;
+    cached.client = await cached.promise;
+    
+    // Verifica se a conexão está realmente viva
+    await cached.client.db('admin').command({ ping: 1 });
+    
+    return cached.client;
   } catch (e) {
+    console.error('Erro na conexão MongoDB:', e);
+    cached.client = null;
     cached.promise = null;
     throw e;
   }
-
-  return cached.conn;
 }
 
 export default connectDB;

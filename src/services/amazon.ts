@@ -1,4 +1,5 @@
 const ProductAdvertisingAPIv1 = require('../../paapi5/src/index');
+import { getProductRating } from './amazonScraper';
 
 const defaultClient = ProductAdvertisingAPIv1.ApiClient.instance;
 defaultClient.accessKey = process.env.AMAZON_ACCESS_KEY || '';
@@ -14,6 +15,8 @@ export interface AmazonOffer {
   price: number;
   link: string;
   storeName: string;
+  rating?: number;
+  reviewCount?: number;
 }
 
 async function fetchAmazonPage(keyword: string, page: number): Promise<AmazonOffer[]> {
@@ -26,7 +29,7 @@ async function fetchAmazonPage(keyword: string, page: number): Promise<AmazonOff
     'Images.Primary.Large',
     'ItemInfo.Title',
     'Offers.Listings.Price',
-    'Offers.Listings.DeliveryInfo.IsPrimeEligible'
+    'Offers.Listings.MerchantInfo'
   ];
 
   console.log(`Fetching Amazon page ${page}...`);
@@ -36,7 +39,7 @@ async function fetchAmazonPage(keyword: string, page: number): Promise<AmazonOff
     return [];
   }
 
-  return response.SearchResult.Items
+  const items = response.SearchResult.Items
     .filter(item => {
       const price = item.Offers?.Listings?.[0]?.Price?.Amount || 0;
       return price > 0;
@@ -46,8 +49,38 @@ async function fetchAmazonPage(keyword: string, page: number): Promise<AmazonOff
       thumbnail: item.Images?.Primary?.Large?.URL || '',
       price: item.Offers?.Listings?.[0]?.Price?.Amount || 0,
       link: item.DetailPageURL || '',
-      storeName: 'Amazon'
+      storeName: 'Amazon',
+      rating: undefined
     }));
+
+  // Busca avaliações via scraping em paralelo (limitado a 5 produtos)
+  const ratingPromises = items.slice(0, 5).map(async item => {
+    if (!item.link) return undefined;
+    try {
+      const { rating } = await getProductRating(item.link);
+      return rating;
+    } catch (error) {
+      console.error('Error getting rating for:', item.link, error);
+      return undefined;
+    }
+  });
+
+  // Preenche undefined para os itens restantes
+  const remainingPromises = items.slice(5).map(() => Promise.resolve(undefined));
+
+  // Aguarda todas as avaliações
+  const [scrapedRatings, remainingRatings] = await Promise.all([
+    Promise.all(ratingPromises),
+    Promise.all(remainingPromises)
+  ]);
+  
+  const ratings = [...scrapedRatings, ...remainingRatings];
+
+  // Atualiza os itens com as avaliações do scraping
+  return items.map((item, index) => ({
+    ...item,
+    rating: ratings[index]
+  }));
 }
 
 export async function searchAmazonProducts(keyword: string): Promise<AmazonOffer[]> {
@@ -64,8 +97,6 @@ export async function searchAmazonProducts(keyword: string): Promise<AmazonOffer
     console.log(`Total products found: ${allProducts.length}`);
     
     return allProducts;
-    
-    return [];
   } catch (error) {
     console.error('Error searching Amazon products:', error);
     return [];

@@ -11,6 +11,7 @@ export async function GET(request: Request) {
 
   try {
     const offers = await searchAmazonProducts(keyword);
+    console.log('Amazon API Response:', JSON.stringify(offers, null, 2));
     return NextResponse.json(offers);
   } catch (error) {
     console.error('Error in Amazon search:', error);

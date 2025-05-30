@@ -10,32 +10,49 @@ import Link from 'next/link';
 import Image from 'next/image';
 
 async function getPopularStores() {
-  await connectDB();
-  const stores = await Store.find()
-    .sort({ 'coupons.length': -1 })
-    .limit(10)
-    .select('name logo slug')
-    .lean();
+  try {
+    await connectDB();
+    const stores = await Store.find({ active: true })
+      .sort({ 'coupons.length': -1 })
+      .limit(10)
+      .select('name logo slug')
+      .lean();
 
-  return JSON.parse(JSON.stringify(stores));
+    return JSON.parse(JSON.stringify(stores || []));
+  } catch (error) {
+    console.error('Error fetching popular stores:', error);
+    return [];
+  }
 }
 
 async function getLatestCoupons() {
-  await connectDB();
-  const coupons = await Coupon.find()
-    .populate('store')
-    .sort({ createdAt: -1 })
-    .limit(6)
-    .lean();
+  try {
+    await connectDB();
+    const coupons = await Coupon.find({ active: true })
+      .populate('store')
+      .sort({ createdAt: -1 })
+      .limit(6)
+      .lean();
 
-  return JSON.parse(JSON.stringify(coupons));
+    return JSON.parse(JSON.stringify(coupons || []));
+  } catch (error) {
+    console.error('Error fetching latest coupons:', error);
+    return [];
+  }
 }
 
 export default async function Home() {
-  const [popularStores, latestCoupons] = await Promise.all([
-    getPopularStores(),
-    getLatestCoupons()
-  ]);
+  let popularStores = [];
+  let latestCoupons = [];
+
+  try {
+    [popularStores, latestCoupons] = await Promise.all([
+      getPopularStores(),
+      getLatestCoupons()
+    ]);
+  } catch (error) {
+    console.error('Error loading home page data:', error);
+  }
 
   return (
     <main className="min-h-screen">

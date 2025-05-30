@@ -1,7 +1,5 @@
 {
-  "/api/admin/settings/route": "app/api/admin/settings/route.js",
-  "/api/auth/[...nextauth]/route": "app/api/auth/[...nextauth]/route.js",
-  "/api/amazon/search/route": "app/api/amazon/search/route.js",
   "/page": "app/page.js",
-  "/[slug]/page": "app/[slug]/page.js"
+  "/categoria/[slug]/page": "app/categoria/[slug]/page.js",
+  "/produtos/[slug]/page": "app/produtos/[slug]/page.js"
 }

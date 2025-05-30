@@ -11,6 +11,16 @@
   letter-spacing: 0.025em;
 }
 
+.filters-container {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+
+
 .store-buttons {
   display: flex;
   flex-direction: column;

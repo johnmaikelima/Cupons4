@@ -1,0 +1,4 @@
+aw_deep_link,merchant_image_url,product_name,merchant_category,store_price,ean,rating
+https://www.magazineluiza.com.br/iphone,https://example.com/iphone.jpg,iPhone 15 Pro Max 256GB,Smartphones,9999.99,123456789,4.5
+https://www.amazon.com.br/galaxy,https://example.com/galaxy.jpg,Samsung Galaxy S24 Ultra,Smartphones,8999.99,987654321,4.8
+https://www.kabum.com.br/notebook,https://example.com/macbook.jpg,MacBook Pro M3 Pro,Notebooks,15999.99,456789123,4.9

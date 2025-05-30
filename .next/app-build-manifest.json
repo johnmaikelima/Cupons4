@@ -16,6 +16,11 @@
       "static/chunks/main-app.js",
       "static/chunks/app/page.js"
     ],
+    "/api/categories/route": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/api/categories/route.js"
+    ],
     "/api/admin/settings/route": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
@@ -26,21 +31,71 @@
       "static/chunks/main-app.js",
       "static/chunks/app/api/auth/[...nextauth]/route.js"
     ],
+    "/categoria/[slug]/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/categoria/[slug]/page.js"
+    ],
+    "/produtos/[slug]/layout": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/produtos/[slug]/layout.js"
+    ],
+    "/produtos/[slug]/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/produtos/[slug]/page.js"
+    ],
+    "/_not-found/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/_not-found/page.js"
+    ],
+    "/api/products/[slug]/route": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/api/products/[slug]/route.js"
+    ],
+    "/api/products/prices/[ean]/route": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/api/products/prices/[ean]/route.js"
+    ],
+    "/api/products/amazon-comparison/[ean]/route": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/api/products/amazon-comparison/[ean]/route.js"
+    ],
+    "/api/products/amazon-recommendations/route": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/api/products/amazon-recommendations/route.js"
+    ],
+    "/api/products/shopee-recommendations/route": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/api/products/shopee-recommendations/route.js"
+    ],
+    "/api/products/price-history/[ean]/route": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/api/products/price-history/[ean]/route.js"
+    ],
+    "/categoria/[slug]/layout": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/categoria/[slug]/layout.js"
+    ],
     "/[slug]/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/css/app/[slug]/page.css",
       "static/chunks/app/[slug]/page.js"
     ],
-    "/api/amazon/search/route": [
+    "/produtos/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/api/amazon/search/route.js"
-    ],
-    "/api/generate/route": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/api/generate/route.js"
+      "static/chunks/app/produtos/page.js"
     ]
   }
 }

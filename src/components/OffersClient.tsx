@@ -6,19 +6,22 @@ import { createRoot } from 'react-dom/client';
 import { Pagination } from './Pagination';
 import { StoreFilter } from './StoreFilter';
 import { PriceFilter } from './PriceFilter';
+import { TopSortFilter } from './TopSortFilter';
 import { dynamicOffers } from '@/lib/dynamicOffers';
 import './StoreFilter.css';
 import '@/app/styles/loading.css';
 
-const ITEMS_PER_PAGE = 15;
+const INITIAL_DISPLAY = 20;
 
 export function OffersClient() {
   const [isLoading, setIsLoading] = useState(true);
   const [offers, setOffers] = useState<any[]>([]); // Armazenar todas as ofertas
-  const [currentPage, setCurrentPage] = useState(1);
   const [selectedStore, setSelectedStore] = useState<string | null>(null);
   const [filteredOffers, setFilteredOffers] = useState<any[]>([]);
   const [priceRange, setPriceRange] = useState<{ min: number; max: number } | null>(null);
+  type SortDirection = 'asc' | 'desc' | 'relevance';
+  const [sortType, setSortType] = useState<SortDirection>('relevance');
+  const [displayCount, setDisplayCount] = useState(INITIAL_DISPLAY);
 
   useEffect(() => {
     const loadOffers = async () => {
@@ -65,29 +68,32 @@ export function OffersClient() {
     }
 
     setFilteredOffers(filtered);
-    setCurrentPage(1); // Reset para primeira página ao trocar filtro
+    // Atualiza as ofertas filtradas
   }, [selectedStore, offers, priceRange]);
 
-  const totalPages = Math.ceil(filteredOffers.length / ITEMS_PER_PAGE);
 
-  const searchParams = useSearchParams();
-  const sortParam = searchParams.get('sort') || 'asc';
 
-  // Ordenar e obter ofertas da página atual
-  const getCurrentPageOffers = () => {
-    // Primeiro ordena todas as ofertas
-    const sortedOffers = [...filteredOffers].sort((a, b) => {
-      if (sortParam === 'asc') {
+
+  // Ordenar todas as ofertas
+  const getSortedOffers = () => {
+    return [...filteredOffers].sort((a, b) => {
+      if (sortType === 'relevance') {
+        // Ordenar por avaliação (rating), produtos sem avaliação vão para o final
+        const ratingA = a.rating || 0;
+        const ratingB = b.rating || 0;
+        return ratingB - ratingA;
+      } else if (sortType === 'asc') {
         return a.price - b.price;
       } else {
         return b.price - a.price;
       }
     });
+  };
 
-    // Depois pega a página atual das ofertas já ordenadas
-    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-    const endIndex = startIndex + ITEMS_PER_PAGE;
-    return sortedOffers.slice(startIndex, endIndex);
+  // Obter ofertas ordenadas com limite
+  const getCurrentPageOffers = () => {
+    const sortedOffers = getSortedOffers();
+    return sortedOffers.slice(0, displayCount);
   };
 
   // Renderizar o filtro de lojas
@@ -140,20 +146,14 @@ export function OffersClient() {
   useEffect(() => {
     if (!isLoading && filteredOffers.length > 0) {
       const currentOffers = getCurrentPageOffers();
-      dynamicOffers.renderOffersToContainer(currentOffers);
+      console.log(`Mostrando ${currentOffers.length} de ${filteredOffers.length} produtos`);
+      dynamicOffers.renderOffersToContainer(currentOffers, sortType);
     }
-  }, [currentPage, filteredOffers, isLoading]);
+  }, [filteredOffers, isLoading, sortType, displayCount]);
 
-  // Resetar página quando mudar ordenação
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [sortParam]);
 
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-    // Scroll suave para o topo das ofertas
-    document.getElementById('ofertas-dinamicas')?.scrollIntoView({ behavior: 'smooth' });
-  };
+
+
 
   return (
     <div>
@@ -165,8 +165,51 @@ export function OffersClient() {
         </div>
       ) : (
         <>
+          {/* Filtro de ordenação e total de produtos */}
+          <TopSortFilter
+            totalItems={filteredOffers.length}
+            sortType={sortType}
+            onSortChange={setSortType}
+          />
+
           {/* Container para os produtos */}
           <div id="ofertas-dinamicas" className="offers-grid" />
+
+          {/* Botão Carregar Mais */}
+          {filteredOffers.length > displayCount && (
+            <div style={{
+              display: 'flex',
+              justifyContent: 'center',
+              margin: '2rem 0',
+              padding: '1rem'
+            }}>
+              <button 
+                onClick={() => {
+                  setDisplayCount(prev => prev + INITIAL_DISPLAY);
+                  // Scroll suave até o último produto
+                  const grid = document.querySelector('.offers-grid');
+                  if (grid) {
+                    const lastProduct = grid.lastElementChild;
+                    lastProduct?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  }
+                }}
+                style={{
+                  padding: '1rem 2rem',
+                  fontSize: '1rem',
+                  backgroundColor: '#4a90e2',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  transition: 'background-color 0.2s'
+                }}
+                onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#357abd'}
+                onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#4a90e2'}
+              >
+                Carregar mais produtos ({filteredOffers.length - displayCount} restantes)
+              </button>
+            </div>
+          )}
 
           {/* Mensagem quando não há ofertas */}
           {filteredOffers.length === 0 && (
@@ -178,16 +221,7 @@ export function OffersClient() {
             </div>
           )}
 
-          {/* Paginação */}
-          {filteredOffers.length > ITEMS_PER_PAGE && (
-            <div className="pagination-wrapper">
-              <Pagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                onPageChange={handlePageChange}
-              />
-            </div>
-          )}
+
         </>
       )}
     </div>

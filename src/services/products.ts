@@ -1,7 +1,10 @@
 import { cache } from 'react';
 import { UnifiedProduct, ProductsResponse, SortDirection } from '../types/Product';
 import { searchAmazonProducts } from './amazon';
+import { searchShopeeProducts } from './shopee';
 import { LomadeeService } from './lomadee';
+import connectDB from '@/lib/mongodb';
+import { Product } from '@/models/Product';
 
 // Cache por 5 minutos
 export const CACHE_DURATION = 5 * 60 * 1000;
@@ -15,14 +18,59 @@ export const getUnifiedProducts = cache(async (
     // Inicializa o serviço da Lomadee
     const lomadeeService = new LomadeeService();
 
+    // Conecta ao MongoDB
+    await connectDB();
+
+    console.log('Buscando produtos no MongoDB com query:', query);
+    
+    // Busca produtos do MongoDB
+    console.log('getUnifiedProducts - Buscando produtos com query:', query);
+
+  const mongoQuery = {
+    $or: [
+      { product_name: { $regex: query.replace(/\s+/g, '.*'), $options: 'i' } },
+      { merchant_category: { $regex: query.replace(/\s+/g, '.*'), $options: 'i' } }
+    ]
+  };
+
+  console.log('getUnifiedProducts - Query MongoDB:', JSON.stringify(mongoQuery, null, 2));
+
+  const mongoProducts = await Product.find(mongoQuery);
+
+  console.log('getUnifiedProducts - Produtos encontrados no MongoDB:', mongoProducts.length);
+
+    console.log('Produtos encontrados no MongoDB:', mongoProducts.length);
+    if (mongoProducts.length > 0) {
+      console.log('Exemplo de produto:', {
+        nome: mongoProducts[0].product_name,
+        categoria: mongoProducts[0].merchant_category
+      });
+
+    }
+
     // Busca produtos de todas as fontes em paralelo
-    const [amazonProducts, lomadeeProducts] = await Promise.all([
+    const [amazonProducts, shopeeProducts, lomadeeProducts] = await Promise.all([
       searchAmazonProducts(query),
+      searchShopeeProducts(query),
       lomadeeService.getProducts(query)
     ]);
 
     // Unifica os produtos
     const unifiedProducts: UnifiedProduct[] = [
+      // Produtos do MongoDB
+      ...mongoProducts.map(p => ({
+        id: p.ean,
+        name: p.product_name,
+        price: p.store_price,
+        thumbnail: p.merchant_image_url,
+        link: p.aw_deep_link,
+        storeName: p.merchant_name || 'Loja',
+        source: 'csv' as 'amazon' | 'aliexpress' | 'lomadee',
+        rating: p.rating,
+        description: p.description,
+        ean: p.ean,
+        originalData: p
+      })),
       // Produtos da Amazon
       ...amazonProducts.map(p => ({
         id: p.name, // usando o nome como id temporário já que não temos ASIN
@@ -43,6 +91,18 @@ export const getUnifiedProducts = cache(async (
         link: p.link,
         storeName: p.storeName,
         source: 'lomadee' as const,
+        originalData: p
+      })),
+      // Produtos da Shopee
+      ...shopeeProducts.map(p => ({
+        id: p.id,
+        name: p.name,
+        price: p.price,
+        thumbnail: p.thumbnail,
+        link: p.link,
+        storeName: p.storeName,
+        source: 'shopee' as const,
+        rating: p.rating,
         originalData: p
       }))
     ];

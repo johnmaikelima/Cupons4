@@ -1,0 +1,275 @@
+import { MongoClient } from 'mongodb';
+import { Metadata } from 'next';
+import { IComparisonProduct } from '@/models/ComparisonProduct';
+import ProductPrices from '@/components/ProductPrices';
+import ShopeeRecommendations from '@/components/ShopeeRecommendations';
+import AmazonRecommendations from '@/components/AmazonRecommendations';
+import PriceHistory from '@/components/PriceHistory';
+
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/linkcompra';
+const DATABASE_NAME = 'linkcompra';
+
+type Props = {
+  params: { slug: string };
+};
+
+function generateStructuredData(product: IComparisonProduct & { brand?: string }) {
+  const lowestPrice = product.prices && product.prices.length > 0
+    ? Math.min(...product.prices.filter(p => p.price > 0).map(p => p.price))
+    : null;
+
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: product.name,
+    description: product.description,
+    image: product.images && product.images.length > 0 ? product.images[0] : '/placeholder.jpg',
+    sku: product.ean,
+    gtin13: product.ean,
+    brand: {
+      '@type': 'Brand',
+      name: product.brand || 'Não especificada'
+    },
+    offers: lowestPrice ? {
+      '@type': 'AggregateOffer',
+      priceCurrency: 'BRL',
+      lowPrice: lowestPrice,
+      highPrice: Math.max(...product.prices.filter(p => p.price > 0).map(p => p.price)),
+      offerCount: product.prices.length,
+      availability: 'https://schema.org/InStock'
+    } : undefined
+  };
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const client = await MongoClient.connect(MONGODB_URI);
+  const db = client.db(DATABASE_NAME);
+
+  try {
+    const product = await db.collection('products').findOne({ slug: params.slug }) as (IComparisonProduct & { brand?: string }) | null;
+
+    if (!product) {
+      return {
+        title: 'Produto não encontrado | Link Compra',
+        description: 'O produto que você está procurando não foi encontrado.',
+        robots: 'noindex'
+      };
+    }
+
+    // Formata o preço mais baixo
+    let priceStr = '';
+    if (product.prices && product.prices.length > 0) {
+      const validPrices = product.prices
+        .filter(p => p.price && p.price > 0)
+        .map(p => p.price);
+      
+      if (validPrices.length > 0) {
+        const lowestPrice = Math.min(...validPrices);
+        priceStr = ` por ${new Intl.NumberFormat('pt-BR', {
+          style: 'currency',
+          currency: 'BRL'
+        }).format(lowestPrice)}`;
+      }
+    }
+
+    // Gera uma descrição SEO-friendly
+    const description = product.description || 
+      `Compare preços de ${product.name} nas principais lojas. ` +
+      `Encontre as melhores ofertas${priceStr} e economize na sua compra!`;
+
+    // Gera keywords relevantes
+    const keywords = [
+      product.name,
+      product.brand,
+      'comparação de preços',
+      'menor preço',
+      'ofertas',
+      'promoção',
+      product.category,
+      'comprar online'
+    ].filter(Boolean);
+
+    return {
+      title: `${product.name}${priceStr} | Compare Preços | Link Compra`,
+      description,
+      keywords: keywords.join(', '),
+      robots: {
+        index: true,
+        follow: true,
+        'max-snippet': 160,
+        'max-image-preview': 'large',
+        'max-video-preview': -1
+      },
+      openGraph: {
+        title: `${product.name}${priceStr}`,
+        description,
+        type: 'product',
+        images: product.images && product.images.length > 0 ? [
+          {
+            url: product.images[0],
+            alt: product.name,
+            width: 800,
+            height: 600
+          }
+        ] : ['/placeholder.jpg'],
+        siteName: 'Link Compra'
+      },
+      twitter: {
+        card: 'summary_large_image',
+        title: `${product.name}${priceStr}`,
+        description,
+        images: product.images && product.images[0] ? [product.images[0]] : ['/placeholder.jpg']
+      },
+      alternates: {
+        canonical: `https://linkcompra.com.br/produtos/${params.slug}`
+      },
+      other: {
+        'og:price:amount': product.prices && product.prices.length > 0 ? 
+          Math.min(...product.prices.map(p => p.price)).toString() : '',
+        'og:price:currency': 'BRL',
+        'product:price:amount': product.prices && product.prices.length > 0 ? 
+          Math.min(...product.prices.map(p => p.price)).toString() : '',
+        'product:price:currency': 'BRL',
+        'product:availability': 'in stock'
+      }
+    };
+  } finally {
+    await client.close();
+  }
+}
+
+export default async function ProductPage({ params }: Props) {
+  const client = await MongoClient.connect(MONGODB_URI);
+  const db = client.db(DATABASE_NAME);
+
+  try {
+    const product = await db.collection('products').findOne({ slug: params.slug }) as (IComparisonProduct & { brand?: string }) | null;
+    
+    if (!product) {
+      return (
+        <div className="min-h-screen bg-gray-50">
+          <div className="container mx-auto px-4 py-8">
+            <div className="text-center text-red-600">
+              Produto não encontrado
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(generateStructuredData(product))
+          }}
+        />
+        <div className="min-h-screen bg-gray-50">
+          <div className="container mx-auto px-4 py-8 space-y-8">
+            {/* Card principal com informações do produto */}
+            <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-6">
+                {/* Coluna da imagem */}
+                <div>
+                  <div className="aspect-square rounded-lg overflow-hidden">
+                    <img
+                      src={product.images[0] || '/placeholder.jpg'}
+                      alt={product.name}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                </div>
+
+                {/* Coluna das informações */}
+                <div>
+                  <h1 className="text-2xl font-bold text-gray-900 mb-4">
+                    {product.name}
+                  </h1>
+
+                  <div className="space-y-4">
+                    {product.ean && (
+                      <p className="text-gray-600">
+                        <span className="font-semibold">EAN:</span> {product.ean}
+                      </p>
+                    )}
+
+                    {/* Preços */}
+                    <div className="mt-6">
+                      <ProductPrices ean={product.ean} initialPrices={product.prices} />
+                    </div>
+
+                    {/* Botões de ação */}
+                    <div className="mt-8 flex space-x-4">
+                      <button className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors">
+                        Comparar Preços
+                      </button>
+                      <button className="flex-1 bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors">
+                        Ver Ofertas
+                      </button>
+                    </div>
+
+                    {/* Especificações Técnicas */}
+                    {product.technicalSpecs && product.technicalSpecs.size > 0 && (
+                      <div className="mt-8">
+                        <h2 className="text-xl font-semibold mb-4">Especificações Técnicas</h2>
+                        <div className="grid grid-cols-1 gap-4">
+                          {Array.from(product.technicalSpecs.entries()).map(([key, value]) => (
+                            <div key={key} className="border-b border-gray-200 pb-2">
+                              <p className="font-semibold text-gray-700">{key}</p>
+                              <p className="text-gray-600">{value}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Histórico de Preços */}
+            <div className="bg-white rounded-xl shadow-lg overflow-hidden p-6">
+              <h2 className="text-2xl font-bold mb-4">Histórico de Preços</h2>
+              <PriceHistory ean={product.ean} />
+            </div>
+
+            {/* Card de recomendações da Amazon */}
+            <div className="bg-white rounded-xl shadow-lg overflow-hidden p-6">
+              <h2 className="text-xl font-semibold mb-4">Recomendações da Amazon</h2>
+              <AmazonRecommendations productName={product.name} />
+            </div>
+
+            {/* Card de recomendações da Shopee */}
+            <div className="bg-white rounded-xl shadow-lg overflow-hidden p-6">
+              <h2 className="text-xl font-semibold mb-4">Recomendações da Shopee</h2>
+              <ShopeeRecommendations productName={product.name} />
+            </div>
+
+            {/* Descrição do Produto */}
+            {product.description && (
+              <div className="bg-white rounded-xl shadow-lg overflow-hidden p-6">
+                <h2 className="text-xl font-semibold mb-4">Descrição do Produto</h2>
+                <div className="prose max-w-none">
+                  <p className="text-gray-600">{product.description}</p>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </>
+    );
+  } catch (error) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="container mx-auto px-4 py-8">
+          <div className="text-center text-red-600">
+            Erro ao carregar produto
+          </div>
+        </div>
+      </div>
+    );
+  } finally {
+    await client.close();
+  }
+}

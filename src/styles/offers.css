@@ -101,6 +101,33 @@
   gap: 1.5rem;
 }
 
+.offer-details {
+  padding: 1rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.offer-rating-container {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.9rem;
+  margin: 4px 0;
+}
+
+.offer-rating {
+  color: #FFD700;
+  letter-spacing: -1px;
+  font-size: 1.1em;
+}
+
+.rating-count {
+  color: #666;
+  font-size: 0.85rem;
+}
+
 .offer-title {
   font-size: 16px;
   font-weight: 500;
