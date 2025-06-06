@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { parse } from 'csv-parse';
-import connectDB from '@/lib/mongodb';
+import { connectDB } from '@/lib/mongodb';
 import { Product } from '@/models/Product';
 
 export async function POST(request: Request) {

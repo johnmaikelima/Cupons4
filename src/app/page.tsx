@@ -1,6 +1,6 @@
 import { Store } from '@/models/Store';
 import { Coupon } from '@/models/Coupon';
-import connectDB from '@/lib/mongodb';
+import { connectDB } from '@/lib/mongodb';
 import HeroBanner from '@/components/home/HeroBanner';
 import WhyUseCoupons from '@/components/home/WhyUseCoupons';
 import HowToUse from '@/components/home/HowToUse';

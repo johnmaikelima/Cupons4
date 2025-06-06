@@ -9,11 +9,11 @@ export interface Category {
 
 export const categories: Category[] = [
   // Automotivo (336 produtos)
-  { id: 'automotivo', name: 'Automotivo', slug: 'automotivo', icon: 'local_shipping', order: 1 },
+  { id: 'automotivo', name: 'Automotivo', slug: 'automotivo', icon: 'car', order: 1 },
   { id: 'pneus', name: 'Pneus para Carro', slug: 'pneus', parent: 'automotivo', order: 1 },
 
   // Smartphones (405 produtos)
-  { id: 'smartphones', name: 'Smartphones', slug: 'smartphones', icon: 'phone_android', order: 2 },
+  { id: 'smartphones', name: 'Smartphones', slug: 'smartphones', icon: 'phone', order: 2 },
   { id: 'android', name: 'Android', slug: 'android', parent: 'smartphones', order: 1 },
   { id: 'iphone', name: 'iPhone', slug: 'iphone', parent: 'smartphones', order: 2 },
   { id: 'acessorios', name: 'Acessórios', slug: 'acessorios', parent: 'smartphones', order: 3 },
@@ -34,12 +34,12 @@ export const categories: Category[] = [
   { id: 'soundbar', name: 'Soundbar', slug: 'soundbar', parent: 'tv-audio', order: 4 },
 
   // Informática (140 produtos)
-  { id: 'informatica', name: 'Informática', slug: 'informatica', icon: 'laptop', order: 5 },
+  { id: 'informatica', name: 'Informática', slug: 'informatica', icon: 'devices', order: 5 },
   { id: 'notebook', name: 'Notebook', slug: 'notebook', parent: 'informatica', order: 1 },
   { id: 'monitores', name: 'Monitores', slug: 'monitores', parent: 'informatica', order: 2 },
 
   // Móveis (88 produtos)
-  { id: 'moveis', name: 'Móveis', slug: 'moveis', icon: 'weekend', order: 6 },
+  { id: 'moveis', name: 'Móveis', slug: 'moveis', icon: 'home', order: 6 },
   { id: 'poltronas', name: 'Poltronas', slug: 'poltronas', parent: 'moveis', order: 1 },
   { id: 'sofa-cama', name: 'Sofás-camas', slug: 'sofa-cama', parent: 'moveis', order: 2 },
 

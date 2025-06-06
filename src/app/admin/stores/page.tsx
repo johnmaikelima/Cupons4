@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { Store } from '@/models/Store';
-import connectDB from '@/lib/mongodb';
+import { connectDB } from '@/lib/mongodb';
 
 // Desabilita cache para esta página
 export const revalidate = 0;

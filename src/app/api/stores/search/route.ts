@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { type Store } from '../../../../models/Store';
-import connectDB from '../../../../lib/mongodb';
+import { connectDB } from '../../../../lib/mongodb';
 import mongoose from 'mongoose';
 
 export async function GET(request: Request) {

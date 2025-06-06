@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { Store } from '@/models/Store';
 import { Coupon } from '@/models/Coupon';
-import connectDB from '@/lib/mongodb';
+import { connectDB } from '@/lib/mongodb';
 
 // DELETE /api/cleanup
 export async function DELETE() {

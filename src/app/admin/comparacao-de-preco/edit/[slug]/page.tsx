@@ -1,8 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
+import { getSession } from 'next-auth/react';
 import { IComparisonProduct } from '@/models/ComparisonProduct';
+import AdminLayout from '@/components/admin/AdminLayout';
 
 interface Price {
   storeName: string;
@@ -11,7 +13,8 @@ interface Price {
   lastUpdate: Date;
 }
 
-export default function EditProductPage({ params }: { params: { slug: string } }) {
+export default function EditProductPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = use(params);
   const router = useRouter();
   const [product, setProduct] = useState<IComparisonProduct | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -29,8 +32,19 @@ export default function EditProductPage({ params }: { params: { slug: string } }
 
   useEffect(() => {
     const fetchProduct = async () => {
+      const session = await getSession();
+      console.log('Sessão:', session);
+      if (!session) {
+        setError('Não autorizado');
+        return;
+      }
       try {
-        const response = await fetch(`/api/products/${params.slug}`);
+        const response = await fetch(`/api/admin/comparison-products/${slug}`, {
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
         const data = await response.json();
         
         if (data.product) {
@@ -62,7 +76,7 @@ export default function EditProductPage({ params }: { params: { slug: string } }
     };
 
     fetchProduct();
-  }, [params.slug]);
+  }, [slug]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -73,10 +87,12 @@ export default function EditProductPage({ params }: { params: { slug: string } }
         specs.map(spec => [spec.key, spec.value])
       );
 
-      const response = await fetch(`/api/admin/comparison-products/${params.slug}`, {
+      const session = await getSession();
+      const response = await fetch(`/api/admin/comparison-products/${slug}`, {
         method: 'PUT',
+        credentials: 'include',
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({
           ...formData,
@@ -109,6 +125,39 @@ export default function EditProductPage({ params }: { params: { slug: string } }
     setSpecs(specs.filter((_, i) => i !== index));
   };
 
+  const handlePriceChange = (index: number, field: keyof Price, value: string) => {
+    const newPrices = [...formData.prices];
+    if (field === 'price') {
+      newPrices[index][field] = parseFloat(value);
+    } else if (field === 'lastUpdate') {
+      newPrices[index][field] = new Date(value);
+    } else {
+      newPrices[index][field] = value;
+    }
+    setFormData({ ...formData, prices: newPrices });
+  };
+
+  const addPrice = () => {
+    setFormData({
+      ...formData,
+      prices: [
+        ...formData.prices,
+        {
+          storeName: '',
+          price: 0,
+          url: '',
+          lastUpdate: new Date()
+        }
+      ]
+    });
+  };
+
+  const removePrice = (index: number) => {
+    const newPrices = [...formData.prices];
+    newPrices.splice(index, 1);
+    setFormData({ ...formData, prices: newPrices });
+  };
+
   if (isLoading) {
     return <div>Carregando...</div>;
   }
@@ -118,7 +167,8 @@ export default function EditProductPage({ params }: { params: { slug: string } }
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <AdminLayout>
+      <div className="container mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold mb-6">Editar Produto</h1>
 
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -247,6 +297,59 @@ export default function EditProductPage({ params }: { params: { slug: string } }
           </button>
         </div>
 
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Preços em Lojas
+          </label>
+          {formData.prices.map((price, index) => (
+            <div key={index} className="flex gap-2 mb-2 items-center">
+              <input
+                type="text"
+                value={price.storeName}
+                onChange={(e) => handlePriceChange(index, 'storeName', e.target.value)}
+                placeholder="Nome da Loja"
+                className="w-1/4 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+              />
+              <input
+                type="number"
+                value={price.price}
+                onChange={(e) => handlePriceChange(index, 'price', e.target.value)}
+                placeholder="Preço"
+                step="0.01"
+                min="0"
+                className="w-1/6 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+              />
+              <input
+                type="url"
+                value={price.url}
+                onChange={(e) => handlePriceChange(index, 'url', e.target.value)}
+                placeholder="URL do Produto"
+                className="w-1/3 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+              />
+              <input
+                type="datetime-local"
+                value={new Date(price.lastUpdate).toISOString().slice(0, 16)}
+                onChange={(e) => handlePriceChange(index, 'lastUpdate', e.target.value)}
+                className="w-1/6 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+              />
+              <button
+                type="button"
+                onClick={() => removePrice(index)}
+                className="px-2 py-1 text-red-600 hover:text-red-800"
+              >
+                Remover
+              </button>
+            </div>
+          ))}
+          <button
+            type="button"
+            onClick={addPrice}
+            className="mt-2 px-4 py-2 text-sm font-medium text-indigo-600 hover:text-indigo-800"
+          >
+            + Adicionar Preço
+          </button>
+        </div>
+
         <div className="flex justify-end space-x-4">
           <button
             type="button"
@@ -264,5 +367,6 @@ export default function EditProductPage({ params }: { params: { slug: string } }
         </div>
       </form>
     </div>
+    </AdminLayout>
   );
 }

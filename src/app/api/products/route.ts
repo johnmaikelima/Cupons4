@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import connectDB from '@/lib/mongodb';
+import { connectDB } from '@/lib/mongodb';
 import { ComparisonProduct } from '@/models/ComparisonProduct';
 
 export async function GET(request: Request) {
@@ -10,20 +10,18 @@ export async function GET(request: Request) {
     const limit = 20;
     const skip = (page - 1) * limit;
 
-    const client = await connectDB();
-    const db = client.db();
-    const collection = db.collection('comparison_products');
+    await connectDB();
     
     // Busca total de produtos
-    const total = await collection.countDocuments({});
+    const total = await ComparisonProduct.countDocuments({});
     
     // Busca os produtos da página atual
-    const products = await collection
+    const products = await ComparisonProduct
       .find({})
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
-      .toArray();
+      .lean();
 
     return NextResponse.json({
       products,

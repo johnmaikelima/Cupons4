@@ -8,7 +8,6 @@ import {
   IoPhonePortraitOutline,
   IoTvOutline,
   IoHomeOutline,
-  IoFastFoodOutline,
   IoLogoApple,
   IoLogoAndroid,
   IoDesktopOutline,
@@ -16,8 +15,11 @@ import {
   IoSnowOutline,
   IoChevronDownOutline,
   IoChevronForwardOutline,
-  IoEllipsisHorizontalOutline
+  IoEllipsisHorizontalOutline,
+  IoCarSportOutline
 } from 'react-icons/io5';
+
+import { MdMicrowave } from 'react-icons/md';
 
 interface Category {
   id: string;
@@ -40,7 +42,7 @@ function getCategoryIcon(icon?: string): JSX.Element {
     case 'home':
       return <IoHomeOutline className="w-5 h-5" />;
     case 'kitchen':
-      return <IoFastFoodOutline className="w-5 h-5" />;
+      return <MdMicrowave className="w-5 h-5" />;
     case 'apple':
       return <IoLogoApple className="w-5 h-5" />;
     case 'android':
@@ -51,6 +53,8 @@ function getCategoryIcon(icon?: string): JSX.Element {
       return <IoWaterOutline className="w-5 h-5" />;
     case 'fridge':
       return <IoSnowOutline className="w-5 h-5" />;
+    case 'car':
+      return <IoCarSportOutline className="w-5 h-5" />;
     default:
       return <IoEllipsisHorizontalOutline className="w-5 h-5" />;
   }

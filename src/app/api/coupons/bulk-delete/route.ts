@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import connectDB from '@/lib/mongodb';
+import { connectDB } from '@/lib/mongodb';
 import { Coupon } from '@/models/Coupon';
 
 export async function DELETE(request: Request) {

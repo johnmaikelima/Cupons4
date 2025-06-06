@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation';
 import StoreForm from '@/components/admin/StoreForm';
 import { Store } from '@/models/Store';
-import connectDB from '@/lib/mongodb';
+import { connectDB } from '@/lib/mongodb';
 
 interface Props {
   params: {

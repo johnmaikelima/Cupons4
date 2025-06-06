@@ -1,7 +1,10 @@
 import { Metadata } from 'next';
+import React from 'react';
 
 type Props = {
-  params: { slug: string };
+  params: {
+    slug: string;
+  };
   children: React.ReactNode;
 };
 

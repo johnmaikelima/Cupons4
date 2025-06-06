@@ -1,15 +1,12 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
-import connectDB from '@/lib/mongodb';
+import { connectDB } from '@/lib/mongodb';
 import { ComparisonProduct, IComparisonProduct } from '@/models/ComparisonProduct';
 import { Product } from '@/models/Product';
 
 // GET - Lista todos os produtos
 export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const query = searchParams.get('q');
-  const limit = parseInt(searchParams.get('limit') || '10');
   try {
     // Verifica autenticação
     const session = await getServerSession(authOptions);
@@ -19,18 +16,14 @@ export async function GET(request: Request) {
 
     // Pega parâmetros da URL
     const { searchParams } = new URL(request.url);
+    const query = searchParams.get('q');
     const page = Math.max(1, parseInt(searchParams.get('page') || '1'));
-    const limit = 15;
+    const limit = 15; // Itens por página
     const skip = (page - 1) * limit;
 
-    const client = await connectDB();
-    const db = client.db();
-    const collection = db.collection('comparison_products');
+    await connectDB();
     
     // Busca total de produtos
-    const total = await collection.countDocuments({});
-    
-    // Busca os produtos da página atual
     const filter = query
       ? {
           $or: [
@@ -42,19 +35,13 @@ export async function GET(request: Request) {
         }
       : {};
 
-    const products = await collection
-      .find(filter)
+    // Busca total e produtos da página atual
+    const total = await ComparisonProduct.countDocuments(filter);
+    const products = await ComparisonProduct.find(filter)
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
-      .toArray();
-
-    // Remover preços importados
-    products.forEach(product => {
-      if (product.prices) {
-        product.prices = product.prices.filter((price: any) => !price.lastImportId);
-      }
-    });
+      .lean();
 
     console.log('Produtos encontrados:', {
       total,

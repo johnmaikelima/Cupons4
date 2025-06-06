@@ -1,17 +1,14 @@
 import { NextResponse } from 'next/server';
-import connectDB from '@/lib/mongodb';
-import { Product } from '@/models/Product';
+import { connectDB } from '@/lib/mongodb';
+import { ComparisonProduct } from '@/models/ComparisonProduct';
 
 export async function GET(
   request: Request,
   { params }: { params: { slug: string } }
 ) {
   try {
-    const client = await connectDB();
-    const db = client.db();
-    const collection = db.collection('comparison_products');
-
-    const product = await collection.findOne({ slug: params.slug });
+    await connectDB();
+    const product = await ComparisonProduct.findOne({ slug: params.slug }).lean();
 
     if (!product) {
       return NextResponse.json(

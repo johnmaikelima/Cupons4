@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { Coupon } from '@/models/Coupon';
-import connectDB from '@/lib/mongodb';
+import { connectDB } from '@/lib/mongodb';
 
 // GET /api/coupons/[id]
 export async function GET(

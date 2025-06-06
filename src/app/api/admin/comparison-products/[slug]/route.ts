@@ -1,22 +1,31 @@
 import { NextResponse } from 'next/server';
-import connectDB from '@/lib/mongodb';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '@/lib/auth';
+import { connectDB } from '@/lib/mongodb';
 import { ComparisonProduct } from '@/models/ComparisonProduct';
 import { Product } from '@/models/Product';
 
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ slug: string }> }
+  context: { params: Promise<{ slug: string }> }
 ) {
   try {
-    const { slug } = await params;
+    // Verifica autenticação
+    const session = await getServerSession(authOptions);
+    if (!session) {
+      return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
+    }
+    const { slug } = await context.params;
     console.log('Buscando produto com slug:', slug);
 
-    const client = await connectDB();
-    const db = client.db();
-    const collection = db.collection('comparison_products');
+    await connectDB();
+
+    // Listar todos os produtos para debug
+    const allProducts = await ComparisonProduct.find({}).lean();
+    console.log('Todos os produtos:', allProducts.map(p => ({ name: p.name, slug: p.slug })));
 
     // Buscar o produto de comparação
-    const product = await collection.findOne({ slug });
+    const product = await ComparisonProduct.findOne({ slug }).lean();
     console.log('Produto encontrado:', product ? 'Sim' : 'Não');
 
     if (!product) {
@@ -48,21 +57,24 @@ export async function GET(
 
 export async function PUT(
   request: Request,
-  { params }: { params: Promise<{ slug: string }> }
+  context: { params: Promise<{ slug: string }> }
 ) {
   try {
+    // Verifica autenticação
+    const session = await getServerSession(authOptions);
+    if (!session) {
+      return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
+    }
     const data = await request.json();
     console.log('Dados recebidos:', data);
 
-    const { slug } = await params;
+    const { slug } = await context.params;
     console.log('Atualizando produto com slug:', slug);
 
-    const client = await connectDB();
-    const db = client.db();
-    const collection = db.collection('comparison_products');
+    await connectDB();
 
     // Buscar o produto atual
-    const currentProduct = await collection.findOne({ slug });
+    const currentProduct = await ComparisonProduct.findOne({ slug }).lean();
     if (!currentProduct) {
       console.log('Produto não encontrado');
       return NextResponse.json(
@@ -73,7 +85,7 @@ export async function PUT(
     console.log('Produto encontrado:', currentProduct._id);
 
     // Atualizar o produto
-    const result = await collection.updateOne(
+    const result = await ComparisonProduct.updateOne(
       { _id: currentProduct._id },
       {
         $set: {
@@ -97,7 +109,7 @@ export async function PUT(
     }
 
     // Buscar o produto atualizado
-    const product = await collection.findOne({ _id: currentProduct._id });
+    const product = await ComparisonProduct.findById(currentProduct._id).lean();
 
     console.log('Produto atualizado com sucesso');
     return NextResponse.json({ product });
@@ -112,16 +124,18 @@ export async function PUT(
 
 export async function DELETE(
   request: Request,
-  { params }: { params: Promise<{ slug: string }> }
+  context: { params: Promise<{ slug: string }> }
 ) {
   try {
-    const { slug } = await params;
+    // Verifica autenticação
+    const session = await getServerSession(authOptions);
+    if (!session) {
+      return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
+    }
+    await connectDB();
 
-    const client = await connectDB();
-    const db = client.db();
-    const collection = db.collection('comparison_products');
-
-    const result = await collection.deleteOne({ slug });
+    const { slug } = await context.params;
+    const result = await ComparisonProduct.deleteOne({ slug });
 
     if (!result.deletedCount) {
       return NextResponse.json(

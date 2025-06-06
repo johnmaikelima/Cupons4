@@ -1,26 +1,38 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 interface Price {
   storeName: string;
   price: number;
   url: string;
-  lastUpdate: Date;
+  lastUpdate: string;
 }
 
 interface ProductPricesProps {
   ean: string;
   initialPrices?: Price[];
+  currentPrice?: number | null;
+  onPriceUpdate?: (price: number | null) => void;
 }
 
-export default function ProductPrices({ ean, initialPrices = [] }: ProductPricesProps) {
+export default function ProductPrices({ ean, initialPrices = [], currentPrice, onPriceUpdate }: ProductPricesProps) {
   const [prices, setPrices] = useState<Price[]>(initialPrices);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  // Estado para o melhor preço, inicializado com o preço do servidor
+  const [bestPrice, setBestPrice] = useState<number | null>(currentPrice);
+
+  // Atualizar bestPrice quando currentPrice mudar
+  useEffect(() => {
+    if (currentPrice) {
+      setBestPrice(currentPrice);
+      onPriceUpdate?.(currentPrice);
+    }
+  }, [currentPrice, onPriceUpdate]);
 
   useEffect(() => {
-    const fetchPrices = async () => {
+    async function fetchPrices() {
       try {
         setIsLoading(true);
         setError(null);
@@ -35,13 +47,25 @@ export default function ProductPrices({ ean, initialPrices = [] }: ProductPrices
 
         // Combinar todos os preços
         const allPrices = [
+          ...initialPrices,
           ...(amazonData.price ? [amazonData.price] : []),
           ...(pricesData.prices || [])
         ];
 
+        // Atualizar preços e calcular o menor
         setPrices(allPrices);
 
-        // Se tem preços válidos, salva o menor no histórico
+        // Calcular o menor preço apenas se não tivermos um do servidor
+        if (!currentPrice) {
+          const validPrices = allPrices.filter(p => p.price && p.price > 0 && !isNaN(p.price));
+          if (validPrices.length > 0) {
+            const lowestPrice = Math.min(...validPrices.map(p => p.price));
+            setBestPrice(lowestPrice);
+            onPriceUpdate?.(lowestPrice);
+          }
+        }
+
+        // Atualizar o histórico de preços se necessário
         if (allPrices.length > 0) {
           const validPrices = allPrices.filter(p => p.price && p.price > 0 && !isNaN(p.price));
           
@@ -112,9 +136,8 @@ export default function ProductPrices({ ean, initialPrices = [] }: ProductPrices
     );
   }
 
-  // Ordenar preços do menor para o maior
-  const sortedPrices = [...prices].sort((a, b) => a.price - b.price);
-  const lowestPrice = sortedPrices[0];
+  // Usar o melhor preço calculado localmente ou o recebido do servidor
+  const lowestPrice = bestPrice ?? currentPrice;
 
   return (
     <div className="space-y-6">
@@ -124,62 +147,76 @@ export default function ProductPrices({ ean, initialPrices = [] }: ProductPrices
         <div className="mt-2 flex justify-between items-center">
           <div>
             <p className="text-2xl font-bold text-green-600">
-              R$ {lowestPrice.price.toFixed(2)}
+              {lowestPrice !== null
+                ? lowestPrice.toLocaleString("pt-BR", {
+                    style: "currency",
+                    currency: "BRL",
+                  })
+                : "R$ --,--"}
             </p>
-            <p className="text-sm text-green-700">{lowestPrice.storeName}</p>
+            {lowestPrice !== null && (
+              <p className="text-sm text-green-700">
+                {prices.find(p => p.price === lowestPrice)?.storeName}
+              </p>
+            )}
           </div>
-          <a
-            href={lowestPrice.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-block px-6 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors"
-          >
-            Comprar Agora
-          </a>
+          {lowestPrice !== null && (
+            <a
+              href={prices.find(p => p.price === lowestPrice)?.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-block px-6 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors"
+            >
+              Comprar Agora
+            </a>
+          )}
         </div>
       </div>
 
       {/* Lista de Preços */}
-      <div>
-        <h2 className="text-xl font-semibold mb-4">
-          Comparação de Preços
+      <div className="mt-6">
+        <h2 className="text-lg font-semibold mb-4">
+          Comparar Preços
           <span className="text-sm font-normal text-gray-500 ml-2">
             em {prices.length} {prices.length === 1 ? 'loja' : 'lojas'}
           </span>
         </h2>
         <div className="space-y-4">
-          {sortedPrices.map((price, index) => (
-            <div
-              key={`${price.storeName}-${index}`}
-              className={`p-4 rounded-lg border ${
-                index === 0 ? 'border-green-500 bg-green-50' : 'border-gray-200'
-              }`}
-            >
-              <div className="flex justify-between items-center">
-                <div>
-                  <p className="font-semibold text-gray-900">
-                    {price.storeName}
-                  </p>
-                  <p className="text-sm text-gray-500">
-                    Atualizado em: {new Date(price.lastUpdate).toLocaleDateString()}
-                  </p>
-                </div>
-                <div className="text-right">
-                  <p className="text-2xl font-bold text-gray-900">
-                    R$ {price.price.toFixed(2)}
-                  </p>
-                  <a
-                    href={price.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-block mt-2 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
-                  >
-                    Ver na Loja
-                  </a>
+          {[...prices]
+            .sort((a, b) => a.price - b.price)
+            .map((price, index) => (
+              <div
+                key={`${price.storeName}-${index}`}
+                className={`p-4 rounded-lg border ${
+                  price.price === lowestPrice ? 'border-green-200 bg-green-50' : 'border-gray-200'
+                }`}
+              >
+                <div className="flex justify-between items-center">
+                  <div>
+                    <p className="font-semibold text-gray-900">{price.storeName}</p>
+                    <p className="text-sm text-gray-500">
+                      Atualizado em: {new Date(price.lastUpdate).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-2xl font-bold text-gray-900">
+                      {price.price.toLocaleString("pt-BR", {
+                        style: "currency",
+                        currency: "BRL",
+                      })}
+                    </p>
+                    <a
+                      href={price.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-block mt-2 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
+                    >
+                      Ver na Loja
+                    </a>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))}
         </div>
       </div>
     </div>

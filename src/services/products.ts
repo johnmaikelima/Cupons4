@@ -3,7 +3,7 @@ import { UnifiedProduct, ProductsResponse, SortDirection } from '../types/Produc
 import { searchAmazonProducts } from './amazon';
 import { searchShopeeProducts } from './shopee';
 import { LomadeeService } from './lomadee';
-import connectDB from '@/lib/mongodb';
+import { connectDB } from '@/lib/mongodb';
 import { Product } from '@/models/Product';
 
 // Cache por 5 minutos

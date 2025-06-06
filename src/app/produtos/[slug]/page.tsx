@@ -1,11 +1,13 @@
 import { Suspense } from 'react';
-import dynamic from 'next/dynamic';
+import { notFound } from 'next/navigation';
+import dynamic from "next/dynamic";
+import { connectDB } from '@/lib/mongodb';
+import { ComparisonProduct, IComparisonProduct } from '@/models/ComparisonProduct';
 
-const ProductPrices = dynamic(() => import('@/components/ProductPrices'));
+const ProductPriceSection = dynamic(() => import('@/components/ProductPriceSection'));
 const PriceHistory = dynamic(() => import('@/components/PriceHistory'));
 const ShopeeRecommendations = dynamic(() => import('@/components/ShopeeRecommendations'));
 const AmazonRecommendations = dynamic(() => import('@/components/AmazonRecommendations'));
-import { IComparisonProduct } from '@/models/ComparisonProduct';
 
 interface Props {
   params: { slug: string };
@@ -13,17 +15,47 @@ interface Props {
 
 async function getProduct(slug: string) {
   try {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/api/products/${slug}`,
-      { next: { revalidate: 3600 } } // Revalidate every hour
-    );
-    
-    if (!response.ok) {
+    await connectDB();
+
+    const product = await ComparisonProduct.findOne({ slug }).lean();
+
+    if (!product) {
       return null;
     }
 
-    const data = await response.json();
-    return data.product as IComparisonProduct;
+    // Buscar preços da Amazon
+    let amazonPrice = null;
+    try {
+      const amazonResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/products/amazon-comparison/${product.ean}`);
+      const amazonData = await amazonResponse.json();
+      if (amazonData.price && amazonData.price.price > 0) {
+        amazonPrice = amazonData.price;
+      }
+    } catch (error) {
+      console.error('Erro ao buscar preço da Amazon:', error);
+    }
+
+    // Combinar todos os preços
+    const allPrices = [
+      ...(product.prices || []),
+      ...(amazonPrice ? [amazonPrice] : [])
+    ];
+
+    // Calcular o melhor preço
+    const bestPrice = allPrices.length > 0
+      ? allPrices.reduce((min, p) => p.price < min ? p.price : min, allPrices[0].price)
+      : null;
+
+    // Transformar o _id em string e incluir o melhor preço
+    const transformedProduct = {
+      ...product,
+      _id: product._id.toString(),
+      prices: allPrices,
+      technicalSpecs: Object.fromEntries(Object.entries(product.technicalSpecs || {})),
+      bestPrice
+    };
+
+    return transformedProduct as IComparisonProduct & { bestPrice: number | null };
   } catch (error) {
     console.error('Erro ao buscar produto:', error);
     return null;
@@ -71,19 +103,23 @@ export default async function ProductPage({ params }: Props) {
 
                 {/* Preços */}
                 <div className="mt-6">
-                  <Suspense fallback={<div>Carregando preços...</div>}>
-                    <ProductPrices ean={product.ean} initialPrices={product.prices} />
+                  <Suspense
+                    fallback={
+                      <div className="animate-pulse space-y-4">
+                        <div className="h-10 bg-gray-200 rounded"></div>
+                        <div className="h-32 bg-gray-200 rounded"></div>
+                      </div>
+                    }
+                  >
+                    <ProductPriceSection
+                      ean={product.ean}
+                      initialPrices={product.prices}
+                      currentPrice={product.bestPrice}
+                      productId={product._id.toString()}
+                      productName={product.name}
+                      key={product.ean}
+                    />
                   </Suspense>
-                </div>
-
-                {/* Botões de ação */}
-                <div className="mt-8 flex space-x-4">
-                  <button className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors">
-                    Comparar Preços
-                  </button>
-                  <button className="flex-1 bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors">
-                    Ver Ofertas
-                  </button>
                 </div>
 
                 {/* Especificações Técnicas */}

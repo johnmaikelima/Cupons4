@@ -15,12 +15,22 @@ export default function ComparisonProductsPage() {
   const [totalPages, setTotalPages] = useState(1);
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout>();
 
-  const loadProducts = useCallback(async (page: number) => {
+  const loadProducts = useCallback(async (page: number, query?: string) => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/admin/comparison-products?page=${page}`);
+      const url = new URL('/api/admin/comparison-products', window.location.origin);
+      url.searchParams.set('page', page.toString());
+      if (query) url.searchParams.set('q', query);
+
+      const response = await fetch(url.toString());
       const data = await response.json();
+      
+      if (data.products) {
+        console.log('Produtos carregados:', data.products.map((p: any) => ({ name: p.name, slug: p.slug })));
+      }
       
       if (!response.ok) {
         throw new Error(data.error || 'Erro ao carregar produtos');
@@ -35,6 +45,41 @@ export default function ComparisonProductsPage() {
       setLoading(false);
     }
   }, []);
+
+  const handleSearch = (query: string) => {
+    setSearchQuery(query);
+    
+    // Cancela o timeout anterior se existir
+    if (searchTimeout) clearTimeout(searchTimeout);
+    
+    // Cria um novo timeout para debounce
+    const timeout = setTimeout(() => {
+      loadProducts(1, query);
+    }, 500);
+    
+    setSearchTimeout(timeout);
+  };
+
+  const handleDelete = async (slug: string) => {
+    if (!confirm('Tem certeza que deseja excluir este produto?')) return;
+
+    try {
+      const response = await fetch(`/api/admin/comparison-products/${slug}`, {
+        method: 'DELETE'
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Erro ao excluir produto');
+      }
+
+      // Recarrega a lista de produtos
+      loadProducts(currentPage, searchQuery);
+    } catch (error) {
+      console.error('Erro ao excluir produto:', error);
+      alert('Erro ao excluir produto. Tente novamente.');
+    }
+  };
 
   useEffect(() => {
     loadProducts(currentPage);
@@ -56,21 +101,32 @@ export default function ComparisonProductsPage() {
     <AdminLayout>
       <div className="container mx-auto px-4 py-8">
         {/* Header com título e botões */}
-        <div className="flex justify-between items-center mb-6">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
           <h1 className="text-2xl font-bold">Comparação de Preços</h1>
-          <div className="flex gap-4">
-            <button
-              onClick={() => setShowCsvUpload(!showCsvUpload)}
-              className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md transition-colors duration-200"
-            >
-              {showCsvUpload ? 'Cancelar Upload' : 'Upload CSV'}
-            </button>
-            <button
-              onClick={() => router.push('/admin/comparacao-de-preco/new')}
-              className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md transition-colors duration-200"
-            >
-              + Novo Produto
-            </button>
+          <div className="flex flex-col md:flex-row gap-4 w-full md:w-auto">
+            <div className="flex-1 md:flex-none">
+              <input
+                type="text"
+                placeholder="Buscar produtos..."
+                value={searchQuery}
+                onChange={(e) => handleSearch(e.target.value)}
+                className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setShowCsvUpload(!showCsvUpload)}
+                className="flex-1 md:flex-none bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md transition-colors duration-200"
+              >
+                {showCsvUpload ? 'Cancelar Upload' : 'Upload CSV'}
+              </button>
+              <button
+                onClick={() => router.push('/admin/comparacao-de-preco/new')}
+                className="flex-1 md:flex-none bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md transition-colors duration-200"
+              >
+                + Novo Produto
+              </button>
+            </div>
           </div>
         </div>
 
@@ -136,40 +192,68 @@ export default function ComparisonProductsPage() {
             </div>
           ) : (
             <>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {products.map((product) => (
                   <div
                     key={product._id}
-                    className="bg-white p-4 rounded-lg shadow hover:shadow-md transition-shadow"
+                    className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300"
                   >
-                    <h3 className="text-lg font-semibold mb-2">{product.name}</h3>
-                    <p className="text-gray-600 mb-2">EAN: {product.ean}</p>
-                    <div className="mt-4 flex justify-between items-center">
-                      <span className="text-sm text-gray-500">
-                        EAN: {product.ean || 'N/A'}
-                      </span>
-                      <div className="space-x-4">
-                        <a
-                          href={`/admin/comparacao-de-preco/edit/${product.slug}`}
-                          className="text-blue-600 hover:text-blue-800"
-                        >
-                          Editar
-                        </a>
-                        <button
-                          onClick={() => handleDelete(product._id)}
-                          className="text-red-600 hover:text-red-800"
-                        >
-                          Excluir
-                        </button>
+                    {product.images && product.images[0] ? (
+                      <div className="relative h-48 mb-4 rounded-lg overflow-hidden">
+                        <img
+                          src={product.images[0]}
+                          alt={product.name}
+                          className="w-full h-full object-cover"
+                        />
                       </div>
-                    </div>
-                    {product.images && product.images[0] && (
-                      <img
-                        src={product.images[0]}
-                        alt={product.name}
-                        className="w-full h-48 object-cover rounded mb-2"
-                      />
+                    ) : (
+                      <div className="h-48 mb-4 rounded-lg bg-gray-100 flex items-center justify-center">
+                        <span className="text-gray-400">Sem imagem</span>
+                      </div>
                     )}
+
+                    <h3 className="text-lg font-semibold mb-2 line-clamp-2">{product.name}</h3>
+                    
+                    <div className="space-y-2 mb-4">
+                      <p className="text-sm text-gray-600">EAN: {product.ean || 'N/A'}</p>
+                      {product.category && (
+                        <p className="text-sm text-gray-600">Categoria: {product.category}</p>
+                      )}
+                      {product.prices && product.prices.length > 0 && (
+                        <div className="mt-2">
+                          <p className="text-sm font-medium text-gray-700">Preços:</p>
+                          <div className="space-y-1">
+                            {product.prices.map((price: any, index: number) => (
+                              <p key={index} className="text-sm text-gray-600">
+                                {price.storeName}: R$ {price.price.toFixed(2)}
+                              </p>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex justify-between items-center pt-4 border-t">
+                      <a
+                        href={`/admin/comparacao-de-preco/edit/${product.slug}`}
+                        className="text-blue-600 hover:text-blue-800 font-medium text-sm"
+                        onClick={(e) => {
+                          console.log('Produto clicado:', {
+                            name: product.name,
+                            slug: product.slug,
+                            _id: product._id
+                          });
+                        }}
+                      >
+                        Editar
+                      </a>
+                      <button
+                        onClick={() => handleDelete(product.slug)}
+                        className="text-red-600 hover:text-red-800 font-medium text-sm"
+                      >
+                        Excluir
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>

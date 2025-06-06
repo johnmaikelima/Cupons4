@@ -1,7 +1,7 @@
 import { Suspense } from 'react';
 import { EditCouponForm } from './edit-form';
 import { headers } from 'next/headers';
-import connectDB from '@/lib/mongodb';
+import { connectDB } from '@/lib/mongodb';
 import { Store } from '@/models/Store';
 import { Coupon } from '@/models/Coupon';
 

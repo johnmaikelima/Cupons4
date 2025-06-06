@@ -1,7 +1,7 @@
 import './styles.css';
 import { notFound } from 'next/navigation';
 import { Page } from '@/models/Page';
-import connectDB from '@/lib/mongodb';
+import { connectDB } from '@/lib/mongodb';
 import { OffersClient } from '@/components/OffersClient';
 import { CategoryDisplay } from '@/components/CategoryDisplay';
 import { MobileFiltersToggle } from '@/components/MobileFiltersToggle';

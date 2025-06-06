@@ -5,7 +5,7 @@ import { Api } from '@/models/Api';
 import { Store } from '@/models/Store';
 import { Coupon } from '@/models/Coupon';
 import { LomadeeService } from '@/services/lomadee';
-import connectDB from '@/lib/mongodb';
+import { connectDB } from '@/lib/mongodb';
 import slugify from 'slugify';
 
 export async function POST(

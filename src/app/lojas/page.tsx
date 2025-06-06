@@ -1,5 +1,5 @@
 import { Store } from '@/models/Store';
-import connectDB from '@/lib/mongodb';
+import { connectDB } from '@/lib/mongodb';
 import StoreCard from '@/components/StoreCard';
 import { Metadata } from 'next';
 

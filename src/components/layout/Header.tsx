@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { RiMenu3Line } from "react-icons/ri";
 import { FiMenu, FiX } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
 import SearchBox from '@/components/SearchBox';
@@ -75,14 +76,35 @@ export default function Header() {
           </div>
 
           {/* Menu Button - Desktop */}
-          <button
-            onClick={() => setIsMenuOpen(true)}
-            className="hidden md:flex md:w-1/5 md:justify-end p-3 hover:bg-gray-100 rounded-lg transition-all duration-200 items-center gap-2 font-medium text-gray-700 hover:text-gray-900"
-            aria-label="Menu"
-          >
-            <FiMenu className="w-5 h-5" />
-            <span>Menu</span>
-          </button>
+          <div className="hidden md:flex md:w-1/5 md:justify-end items-center gap-4">
+            <Link
+              href="/meus-alertas"
+              className="p-3 hover:bg-gray-100 rounded-lg transition-all duration-200 flex items-center gap-2 font-medium text-gray-700 hover:text-gray-900"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="w-5 h-5"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+              </svg>
+              <span>Meus Alertas</span>
+            </Link>
+            <button
+              onClick={() => setIsMenuOpen(true)}
+              className="p-3 hover:bg-gray-100 rounded-lg transition-all duration-200 flex items-center gap-2 font-medium text-gray-700 hover:text-gray-900"
+              aria-label="Menu"
+            >
+              <RiMenu3Line className="w-5 h-5" />
+              <span>Menu</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -135,8 +157,27 @@ export default function Header() {
 
       {/* Busca Mobile */}
       <div className="md:hidden border-t border-gray-100 bg-gray-50">
-        <div className="p-4">
+        <div className="p-4 space-y-4">
           <SearchBox />
+          <Link
+            href="/meus-alertas"
+            className="flex items-center gap-2 p-3 hover:bg-gray-100 rounded-lg transition-all duration-200 font-medium text-gray-700 hover:text-gray-900"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="w-5 h-5"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+              <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+            </svg>
+            <span>Meus Alertas</span>
+          </Link>
         </div>
       </div>
 

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { Store } from '@/models/Store';
-import connectDB from '@/lib/mongodb';
+import { connectDB } from '@/lib/mongodb';
 import slugify from 'slugify';
 
 interface Props {

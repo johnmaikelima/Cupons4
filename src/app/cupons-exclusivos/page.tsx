@@ -1,6 +1,6 @@
 import { Coupon } from '@/models/Coupon';
 import { Store } from '@/models/Store';
-import connectDB from '@/lib/mongodb';
+import { connectDB } from '@/lib/mongodb';
 import CouponCard from '@/components/CouponCard';
 import { Metadata } from 'next';
 

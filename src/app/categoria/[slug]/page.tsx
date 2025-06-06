@@ -1,24 +1,25 @@
-import connectDB from '@/lib/mongodb';
-import { ComparisonProduct } from '@/models/ComparisonProduct';
-import ProductCard from '../../../components/ProductCard';
+import { connectDB } from '@/lib/mongodb';
+import { ComparisonProduct, IComparisonProduct } from '@/models/ComparisonProduct';
+import ProductCard from '@/components/ProductCard';
 import { IoGrid } from 'react-icons/io5';
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 
-interface Props {
+type Props = {
   params: {
     slug: string;
   };
   searchParams?: {
     page?: string;
   };
-}
+};
 
 const ITEMS_PER_PAGE = 30;
 
 async function getCategoryProducts(slug: string, page: number = 1) {
   try {
-    const db = (await connectDB()).db();
-    const collection = db.collection('comparison_products');
+    await connectDB();
+
+    // Já temos o modelo importado
 
     // Converte o slug para o nome da categoria
     const categoryName = slug
@@ -30,30 +31,46 @@ async function getCategoryProducts(slug: string, page: number = 1) {
     const singularName = categoryName.replace(/s$/, '');
     const pluralName = categoryName.endsWith('s') ? categoryName : `${categoryName}s`;
     
-    const query = {
+    // Busca por correspondência exata primeiro
+    const exactQuery = {
       $or: [
-        { category: { $regex: new RegExp(`^${categoryName}$`, 'i') } },
-        { category: { $regex: new RegExp(`^${singularName}$`, 'i') } },
-        { category: { $regex: new RegExp(`^${pluralName}$`, 'i') } },
+        { category: categoryName },
+        { category: singularName },
+        { category: pluralName }
+      ]
+    };
+
+    // Verifica se existem resultados com correspondência exata
+    const exactCount = await ComparisonProduct.countDocuments(exactQuery);
+
+    // Se não houver resultados exatos, tenta busca mais flexível
+    const query = exactCount > 0 ? exactQuery : {
+      $or: [
+        { category: { $regex: new RegExp(categoryName, 'i') } },
+        { category: { $regex: new RegExp(singularName, 'i') } },
+        { category: { $regex: new RegExp(pluralName, 'i') } },
         { category: { $regex: new RegExp(categoryName.split(' ')[0], 'i') } }
       ]
     };
 
-    // Conta total de produtos
-    const totalProducts = await collection.countDocuments(query);
+    const skip = (page - 1) * ITEMS_PER_PAGE;
 
-    // Busca produtos com paginação
-    const products = await collection
-      .find(query)
-      .sort({ createdAt: -1 })
-      .skip((page - 1) * ITEMS_PER_PAGE)
-      .limit(ITEMS_PER_PAGE)
-      .toArray();
+    const [products, totalProducts] = await Promise.all([
+      ComparisonProduct
+        .find(query)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(ITEMS_PER_PAGE)
+        .lean(),
+      ComparisonProduct.countDocuments(query)
+    ]);
+
+    const totalPages = Math.ceil(totalProducts / ITEMS_PER_PAGE);
 
     return {
       products: JSON.parse(JSON.stringify(products)),
       totalProducts,
-      totalPages: Math.ceil(totalProducts / ITEMS_PER_PAGE)
+      totalPages,
     };
   } catch (error) {
     console.error('Erro ao buscar produtos da categoria:', error);
@@ -62,9 +79,14 @@ async function getCategoryProducts(slug: string, page: number = 1) {
 }
 
 export default async function CategoryPage({ params, searchParams }: Props) {
-  const currentPage = Number(searchParams?.page) || 1;
-  const { products, totalProducts, totalPages } = await getCategoryProducts(params.slug, currentPage);
-  const categoryName = params.slug
+  // Aguarda os parâmetros
+  const { slug } = await Promise.resolve(params);
+  const { page } = await Promise.resolve(searchParams || {});
+  
+  const currentPage = Number(page) || 1;
+  const { products, totalProducts, totalPages } = await getCategoryProducts(slug, currentPage);
+  
+  const categoryName = slug
     .split('-')
     .map(word => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ');
@@ -89,12 +111,12 @@ export default async function CategoryPage({ params, searchParams }: Props) {
         {products.length > 0 ? (
           <>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-              {products.map((product: any) => (
+              {products.map((product: IComparisonProduct) => (
                 <div key={product._id} className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow">
                   <a href={`/produtos/${product.slug}`} className="block">
                     <div className="aspect-square relative">
                       <img
-                        src={product.images[0] || '/placeholder.jpg'}
+                        src={product.images?.[0] || '/placeholder.jpg'}
                         alt={product.name}
                         className="w-full h-full object-cover"
                       />

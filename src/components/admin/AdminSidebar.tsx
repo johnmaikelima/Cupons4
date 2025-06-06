@@ -6,12 +6,37 @@ import {
   ShoppingBag,
   Tag,
   Network,
-  Trash2
+  Trash2,
+  Bell,
+  LineChart,
+  Upload
 } from 'lucide-react';
 import { FiSettings } from 'react-icons/fi';
+import { useState } from 'react';
 
 export default function AdminSidebar() {
   const pathname = usePathname();
+  const [isMonitoring, setIsMonitoring] = useState(false);
+
+  const startPriceMonitoring = async () => {
+    try {
+      setIsMonitoring(true);
+      const response = await fetch('/api/admin/monitor-prices', {
+        method: 'POST'
+      });
+      
+      if (!response.ok) {
+        throw new Error('Falha ao iniciar monitoramento');
+      }
+
+      alert('Monitoramento de preços iniciado!');
+    } catch (error) {
+      console.error('Erro:', error);
+      alert('Erro ao iniciar monitoramento');
+    } finally {
+      setIsMonitoring(false);
+    }
+  };
 
   return (
     <aside className="w-64 bg-white shadow-md h-screen">
@@ -85,6 +110,40 @@ export default function AdminSidebar() {
         >
           <Trash2 size={20} />
           <span>Limpar Dados</span>
+        </Link>
+
+        <button
+          onClick={startPriceMonitoring}
+          disabled={isMonitoring}
+          className={cn(
+            'w-full flex items-center space-x-2 px-4 py-2 rounded hover:bg-gray-100 disabled:opacity-50',
+            isMonitoring && 'bg-blue-50 text-blue-600'
+          )}
+        >
+          <Bell size={20} />
+          <span>{isMonitoring ? 'Monitorando...' : 'Monitorar Preços'}</span>
+        </button>
+
+        <Link
+          href="/admin/comparacao-de-preco"
+          className={cn(
+            'flex items-center space-x-2 px-4 py-2 rounded hover:bg-gray-100',
+            pathname === '/admin/comparacao-de-preco' && 'bg-gray-100'
+          )}
+        >
+          <LineChart size={20} />
+          <span>Comparação de Preços</span>
+        </Link>
+
+        <Link
+          href="/admin/import"
+          className={cn(
+            'flex items-center space-x-2 px-4 py-2 rounded hover:bg-gray-100',
+            pathname === '/admin/import' && 'bg-gray-100'
+          )}
+        >
+          <Upload size={20} />
+          <span>Importar Dados</span>
         </Link>
       </nav>
     </aside>

@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import connectDB from '@/lib/mongodb';
+import { connectDB } from '@/lib/mongodb';
 import { Store } from '@/models/Store';
 import { Coupon } from '@/models/Coupon';
 

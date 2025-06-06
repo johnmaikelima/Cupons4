@@ -7,8 +7,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 
-export default function ProductDetailsPage({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = use(params);
+export default function ProductDetailsPage({ params }: { params: { slug: string } }) {
+  const { slug } = params;
   const router = useRouter();
   const [product, setProduct] = useState<IComparisonProduct | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -79,7 +79,7 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ slug:
             </div>
             <Button
               variant="outline"
-              onClick={() => router.push(`/admin/comparacao-de-preco/${slug}/edit`)}
+              onClick={() => router.push(`/admin/comparacao-de-preco/edit/${slug}`)}
             >
               Editar
             </Button>
@@ -189,7 +189,7 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ slug:
           <div className="mt-8 flex justify-end space-x-4">
             <Button
               variant="outline"
-              onClick={() => router.push(`${slug}/edit`)}
+              onClick={() => router.push(`/admin/comparacao-de-preco/edit/${slug}`)}
             >
               Editar
             </Button>

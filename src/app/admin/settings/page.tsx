@@ -2,16 +2,21 @@ import { SiteConfig } from '@/models/SiteConfig';
 import { connectDB } from '@/lib/mongoose';
 import SiteConfigForm from '@/components/admin/SiteConfigForm';
 
+export const dynamic = 'force-dynamic';
+
 export default async function SettingsPage() {
-  await connectDB();
-  
-  // Buscar ou criar configuração padrão
-  let config = await SiteConfig.findOne();
-  if (!config) {
-    config = await SiteConfig.create({
+  let config;
+
+  try {
+    await connectDB();
+    config = await SiteConfig.findOne();
+  } catch (error) {
+    console.error('Error connecting to database:', error);
+    // Durante o build, use configuração padrão
+    config = {
       logo: '/logo.png',
       name: 'Linkcompra'
-    });
+    };
   }
 
   return (

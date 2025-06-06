@@ -1,7 +1,7 @@
 import { Store } from '@/models/Store';
 import { Coupon } from '@/models/Coupon';
 import { Page } from '@/models/Page';
-import connectDB from '@/lib/mongodb';
+import { connectDB } from '@/lib/mongodb';
 import Link from 'next/link';
 
 export default async function AdminDashboard() {
