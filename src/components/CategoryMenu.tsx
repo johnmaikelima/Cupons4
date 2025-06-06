@@ -95,52 +95,45 @@ export default function CategoryMenu() {
     );
   }
 
-  // Todas as categorias já vem ordenadas da API
-
   return (
-    <nav className="w-full bg-blue-600">
-      <div className="container mx-auto px-4">
-        <div className="flex items-center h-12 -mx-2">
-          {/* Categorias principais */}
-          {categories.map((category) => (
-            <div key={category.id} className="relative group">
-              <Link
-                href={`/categoria/${category.slug}`}
-                className="px-3 h-full flex items-center gap-2 text-white hover:text-white hover:bg-blue-700 transition-colors text-sm font-medium"
-              >
-                {getCategoryIcon(category.icon)}
-                <span>{category.name}</span>
-                {category.children && (
-                  <IoChevronDownOutline className="w-4 h-4 ml-1" />
-                )}
-              </Link>
-
-              {/* Submenu */}
+    <nav className="flex-1 overflow-hidden">
+      <div className="flex items-center h-full overflow-x-auto no-scrollbar md:overflow-visible" style={{ WebkitOverflowScrolling: 'touch' }}>
+        {categories.map((category) => (
+          <div key={category.id} className="relative group">
+            <Link
+              href={`/categoria/${category.slug}`}
+              className="px-3 h-full flex items-center gap-2 text-white hover:text-white hover:bg-blue-700 transition-colors text-sm font-medium whitespace-nowrap"
+            >
+              {getCategoryIcon(category.icon)}
+              <span>{category.name}</span>
               {category.children && (
-                <div className="absolute top-full left-0 w-56 mt-1 py-2 bg-white rounded-lg shadow-lg z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
-                  {category.children.map((subcat) => (
-                    <Link
-                      key={subcat.id}
-                      href={`/categoria/${subcat.slug}`}
-                      className="px-4 py-2 flex items-center gap-2 hover:bg-blue-50 text-gray-600 hover:text-blue-600 transition-colors text-sm"
-                    >
-                      {getCategoryIcon(subcat.icon)}
-                      <span>{subcat.name}</span>
-                      <span className="ml-auto text-xs text-gray-500">
-                        {subcat.count}
-                      </span>
-                      {subcat.children && (
-                        <IoChevronForwardOutline className="w-4 h-4" />
-                      )}
-                    </Link>
-                  ))}
-                </div>
+                <IoChevronDownOutline className="w-4 h-4 ml-1" />
               )}
-            </div>
-          ))}
+            </Link>
 
-
-        </div>
+            {/* Submenu */}
+            {category.children && (
+              <div className="absolute top-full left-0 w-56 mt-1 py-2 bg-white rounded-lg shadow-lg z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                {category.children.map((subcat) => (
+                  <Link
+                    key={subcat.id}
+                    href={`/categoria/${subcat.slug}`}
+                    className="px-4 py-2 flex items-center gap-2 hover:bg-blue-50 text-gray-600 hover:text-blue-600 transition-colors text-sm"
+                  >
+                    {getCategoryIcon(subcat.icon)}
+                    <span>{subcat.name}</span>
+                    <span className="ml-auto text-xs text-gray-500">
+                      {subcat.count}
+                    </span>
+                    {subcat.children && (
+                      <IoChevronForwardOutline className="w-4 h-4" />
+                    )}
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+        ))}
       </div>
     </nav>
   );
