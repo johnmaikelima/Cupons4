@@ -75,6 +75,13 @@ export default async function ProductPage({ params }: Props) {
         {/* Card principal com informações do produto */}
         <div className="bg-white rounded-xl shadow-lg overflow-hidden">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-6">
+            {/* Título do produto - aparece primeiro no mobile */}
+            <div className="md:hidden">
+              <h1 className="text-lg font-bold text-gray-900 mb-4">
+                {product.name}
+              </h1>
+            </div>
+
             {/* Coluna da imagem */}
             <div>
               <div className="aspect-square rounded-lg overflow-hidden">
@@ -90,7 +97,8 @@ export default async function ProductPage({ params }: Props) {
 
             {/* Coluna das informações */}
             <div>
-              <h1 className="text-2xl font-bold text-gray-900 mb-4">
+              {/* Título aparece aqui apenas no desktop */}
+              <h1 className="hidden md:block text-2xl font-bold text-gray-900 mb-4">
                 {product.name}
               </h1>
 
