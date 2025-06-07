@@ -1,45 +1,43 @@
-const { MongoClient } = require('mongodb');
+const mongoose = require('mongoose');
 
-const MONGODB_URI = 'mongodb://localhost:27017/linkcompra';
+async function connectDB() {
+  try {
+    mongoose.set('bufferTimeoutMS', 30000);
+    await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/cupons');
+    return mongoose.connection;
+  } catch (error) {
+    console.error('Erro ao conectar ao MongoDB:', error);
+    throw error;
+  }
+}
 
 async function checkProducts() {
-  let client = null;
-
   try {
-    console.log('Conectando ao MongoDB...');
-    client = await MongoClient.connect(MONGODB_URI);
-    const db = client.db();
-    console.log('Conectado com sucesso!');
+    const connection = await connectDB();
+    
+    // Lista todas as coleções
+    const collections = await connection.db.listCollections().toArray();
+    console.log('\nColeções disponíveis:');
+    collections.forEach(collection => {
+      console.log(`- ${collection.name}`);
+    });
 
-    const products = await db.collection('products').find({}).toArray();
-    console.log(`Total de produtos: ${products.length}`);
+    // Verifica produtos em cada coleção
+    for (const collection of collections) {
+      const count = await connection.db.collection(collection.name).countDocuments();
+      console.log(`\nTotal de documentos em ${collection.name}: ${count}`);
 
-    if (products.length > 0) {
-      console.log('\nEstrutura do primeiro produto:');
-      console.log(JSON.stringify(products[0], null, 2));
-
-      console.log('\nVerificando preços dos produtos:');
-      products.forEach((product, index) => {
-        console.log(`\nProduto ${index + 1}:`);
-        console.log('Título:', product.title);
-        console.log('EAN:', product.ean);
-        console.log('Preços:', product.prices ? product.prices.length : 0);
-        
-        if (product.prices && product.prices.length > 0) {
-          product.prices.forEach(price => {
-            console.log(`- Loja: ${price.storeName}, Preço: ${price.price}`);
-          });
-        }
-      });
+      if (count > 0) {
+        const sample = await connection.db.collection(collection.name).findOne();
+        console.log(`Exemplo de documento em ${collection.name}:`);
+        console.log(JSON.stringify(sample, null, 2));
+      }
     }
 
+    process.exit(0);
   } catch (error) {
     console.error('Erro:', error);
-  } finally {
-    if (client) {
-      await client.close();
-      console.log('\nConexão com MongoDB fechada.');
-    }
+    process.exit(1);
   }
 }
 

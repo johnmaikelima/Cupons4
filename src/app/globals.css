@@ -2,6 +2,23 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Dropdown Menu */
+.group:hover > div > .group-hover\:bg-blue-700 {
+  background-color: rgb(29 78 216);
+}
+
+.group:hover > div > .group-hover\:rotate-180 {
+  transform: rotate(180deg);
+}
+
+.group:hover > .group-hover\:visible {
+  visibility: visible;
+}
+
+.group:hover > .group-hover\:opacity-100 {
+  opacity: 1;
+}
+
 @layer utilities {
   .no-scrollbar::-webkit-scrollbar {
     display: none;

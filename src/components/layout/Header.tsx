@@ -1,16 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { RiMenu3Line } from "react-icons/ri";
-import { FiMenu, FiX, FiBell } from 'react-icons/fi';
-import { motion, AnimatePresence } from 'framer-motion';
-import SearchBox from '@/components/SearchBox';
-import SearchButton from '@/components/SearchButton';
-import CategoryMenu from '@/components/CategoryMenu';
-import CouponsMenu from '@/components/CouponsMenu';
-import FloatingBell from '@/components/FloatingBell';
+import { IoSearchOutline, IoNotificationsOutline, IoTicketOutline } from 'react-icons/io5';
+import { IoIosArrowBack, IoIosArrowForward } from 'react-icons/io';
+import CategoryMenuWrapper from '../CategoryMenuWrapper';
 
 interface SiteConfig {
   logo: string;
@@ -18,11 +13,12 @@ interface SiteConfig {
 }
 
 export default function Header() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [config, setConfig] = useState<SiteConfig>({ logo: '', name: 'LinkCompra' });
+  const [showSearch, setShowSearch] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const categoryScrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Carregar configurações do site
     fetch('/api/admin/settings')
       .then(res => res.json())
       .then(data => {
@@ -33,130 +29,118 @@ export default function Header() {
       .catch(console.error);
   }, []);
 
-  const menuLinks = [
-    { href: '/', label: 'Início' },
-    { href: '/lojas', label: 'Lojas' },
-    { href: '/cupons', label: 'Cupons' },
-  ];
+  const scrollCategories = (direction: 'left' | 'right') => {
+    if (categoryScrollRef.current) {
+      const scrollAmount = 200;
+      const newScrollLeft = direction === 'left' 
+        ? categoryScrollRef.current.scrollLeft - scrollAmount
+        : categoryScrollRef.current.scrollLeft + scrollAmount;
+      
+      categoryScrollRef.current.scrollTo({
+        left: newScrollLeft,
+        behavior: 'smooth'
+      });
+    }
+  };
 
   return (
-    <header className="bg-blue-600 sticky top-0 z-50 shadow-sm">
-      {/* Barra Principal */}
-      <div className="container mx-auto px-4 md:px-8">
-        <div className="flex items-center h-16 md:h-16 justify-between gap-4">
-          {/* Menu Button - Mobile */}
-          <button
-            onClick={() => setIsMenuOpen(true)}
-            className="p-2 text-white hover:bg-blue-700 rounded-lg transition-colors md:hidden"
-            aria-label="Menu"
-          >
-            <FiMenu className="w-6 h-6" />
-          </button>
-
-          {/* Logo */}
-          <Link 
-            href="/" 
-            className="flex items-center flex-none w-32 md:w-40"
-          >
-            {config.logo ? (
-              <div className="relative h-8 w-32 md:w-40 transition-all duration-200">
-                <Image
-                  src={config.logo}
-                  alt={config.name}
-                  fill
-                  className="object-contain brightness-0 invert"
-                  priority
-                />
-              </div>
-            ) : (
-              <span className="text-xl font-bold text-white">
-                {config.name}
-              </span>
-            )}
-          </Link>
-
-          {/* Menu Desktop */}
-          <div className="hidden md:flex items-center flex-1 h-full gap-1">
-            <CategoryMenu />
-            <CouponsMenu />
-            <Link
-              href="/meus-alertas"
-              className="flex items-center gap-2 px-4 h-full text-white hover:text-white hover:bg-blue-700 transition-colors font-medium"
-            >
-              <FiBell className="w-5 h-5" />
-              <span>Meus Alertas</span>
-            </Link>
-          </div>
-
-          {/* Busca */}
-          <div className="flex items-center">
-            <div className="hidden md:block">
-              <SearchButton />
+    <>
+      <header className="bg-blue-600 sticky top-0 z-[100] shadow-sm">
+        <div className="relative max-w-7xl mx-auto px-4">
+          {/* Barra superior */}
+          <div className="relative h-16 flex items-center justify-between z-[101]">
+            {/* Menu Cupons Mobile */}
+            <div className="lg:hidden">
+              <Link href="/cupons" className="text-white hover:text-blue-100">
+                <IoTicketOutline className="w-6 h-6" />
+              </Link>
             </div>
-            <div className="md:hidden">
-              <SearchButton />
+
+            {/* Menu Cupons Desktop */}
+            <div className="hidden lg:block">
+              <Link href="/cupons" className="text-white hover:text-blue-100 font-medium">
+                Cupons
+              </Link>
+            </div>
+
+            {/* Logo */}
+            <div className="flex justify-center">
+              <Link href="/" className="relative w-32 h-8">
+                {config.logo ? (
+                  <Image
+                    src={config.logo}
+                    alt={config.name}
+                    fill
+                    style={{ objectFit: 'contain' }}
+                    className="brightness-0 invert"
+                    priority
+                  />
+                ) : (
+                  <span className="text-xl font-bold text-white">
+                    {config.name}
+                  </span>
+                )}
+              </Link>
+            </div>
+
+            {/* Busca */}
+            <div className="flex items-center justify-end">
+              <button 
+                onClick={() => setShowSearch(!showSearch)}
+                className="text-white hover:text-blue-100"
+              >
+                <IoSearchOutline className="w-6 h-6" />
+              </button>
             </div>
           </div>
 
-        </div>
-      </div>
-
-      {/* Menu Lateral */}
-      <AnimatePresence>
-        {isMenuOpen && (
-          <>
-            {/* Overlay */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 0.5 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setIsMenuOpen(false)}
-              className="fixed inset-0 bg-black z-50"
+          {/* Campo de busca expandido */}
+          <div className={`absolute inset-x-0 top-16 bg-blue-700 p-4 transition-all duration-300 ${showSearch ? 'opacity-100 visible' : 'opacity-0 invisible'}`}>
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Buscar cupons..."
+              className="w-full px-4 py-2 rounded-lg text-sm focus:outline-none"
             />
+          </div>
 
-            {/* Menu Content */}
-            <motion.div
-              initial={{ x: '100%' }}
-              animate={{ x: 0 }}
-              exit={{ x: '100%' }}
-              transition={{ type: 'tween' }}
-              className="fixed right-0 top-0 h-full w-80 bg-white shadow-xl z-50"
+          {/* Menu de Categorias com scroll */}
+          <div className="relative z-[102] border-t border-blue-500">
+            <button 
+              onClick={() => scrollCategories('left')}
+              className="absolute left-0 top-1/2 -translate-y-1/2 bg-blue-700 text-white p-1 rounded-r-lg z-10 lg:hidden"
             >
-              <div className="p-4">
-                <button
-                  onClick={() => setIsMenuOpen(false)}
-                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors float-right"
-                >
-                  <FiX className="w-6 h-6" />
-                </button>
+              <IoIosArrowBack className="w-5 h-5" />
+            </button>
 
-                <nav className="mt-12">
-                  {menuLinks.map((link) => (
-                    <Link
-                      key={link.href}
-                      href={link.href}
-                      className="block py-3 px-4 text-lg font-medium text-gray-900 hover:bg-blue-50 rounded-lg transition-colors"
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      {link.label}
-                    </Link>
-                  ))}
-                </nav>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+            <div 
+              ref={categoryScrollRef}
+              className="overflow-x-auto scrollbar-hide py-2"
+              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            >
+              <nav className="flex items-center gap-2 px-6 lg:px-0">
+                <CategoryMenuWrapper />
+              </nav>
+            </div>
 
+            <button 
+              onClick={() => scrollCategories('right')}
+              className="absolute right-0 top-1/2 -translate-y-1/2 bg-blue-700 text-white p-1 rounded-l-lg z-10 lg:hidden"
+            >
+              <IoIosArrowForward className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+      </header>
 
-
-      {/* Menu de Categorias Mobile */}
-      <div className="md:hidden">
-        <CategoryMenu />
-      </div>
-      
-      {/* Sino Flutuante */}
-      <FloatingBell />
-    </header>
+      {/* Botão flutuante de alertas */}
+      <Link 
+        href="/meus-alertas" 
+        className="fixed bottom-6 right-6 bg-blue-600 text-white p-3 rounded-full shadow-lg hover:bg-blue-700 transition-colors z-50"
+      >
+        <IoNotificationsOutline className="w-6 h-6" />
+      </Link>
+    </>
   );
 }
